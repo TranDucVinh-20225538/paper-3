@@ -359,7 +359,13 @@ def main():
     _debug("embeddings saved")
 
     _debug("computing geometry diagnostics")
-    diagnostics = compute_geometry_diagnostics(features, labels, num_classes=NUM_CLASSES, reg_eps=REG_EPS)
+    # debug=True: temporary per-metric timing (matches this file's own debug
+    # instrumentation) -- prints covariance fitting / condition number /
+    # Fisher ratio / Mardia statistic / bootstrap calibration timings plus a
+    # summary bar. Remove alongside the rest of this file's _debug(...) calls.
+    diagnostics = compute_geometry_diagnostics(
+        features, labels, num_classes=NUM_CLASSES, reg_eps=REG_EPS, debug=True
+    )
     _debug("geometry diagnostics computed")
 
     row = {

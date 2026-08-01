@@ -41,7 +41,12 @@ import torch
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 
-_CSG_ROOT = Path(__file__).resolve().parents[2] / "CSG-SKin"
+# CSG-SKin's root is located via _repo_paths (marker-file search,
+# layout-agnostic) rather than a hardcoded parent-count -- paper-3/ has been
+# deployed both as a CSG-SKin sibling and nested inside it (see _repo_paths.py).
+from _repo_paths import find_csg_skin_root  # noqa: E402
+
+_CSG_ROOT = find_csg_skin_root(__file__)
 if str(_CSG_ROOT) not in sys.path:
     sys.path.insert(0, str(_CSG_ROOT))
 

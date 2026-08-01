@@ -54,7 +54,8 @@ This is `environment_requirements.md`'s already-documented gap, not a new findin
 - ✅ ISIC-train-under-eval-transform loader, matching the canonical script, not `train_csg.py`'s augmented loader.
 - ✅ Output CSV schema matches column-for-column.
 - ⬜ Manifest-driven resolution across all 18 (rung, seed) checkpoints — correctly out of scope for this script (that's the not-yet-written Task 4 batch driver, one checkpoint at a time is this script's whole job).
-- ⬜ Dataset/checkpoint paths configurable, not hardcoded — `--checkpoint`, `--metadata_csv`, `--output_dir` are all CLI arguments with no absolute local-machine path baked in except the *relative* `_CSG_ROOT = parents[2] / "CSG-SKin"` sibling-directory assumption, which holds on the server only if the same relative layout (`paper-3/` next to `CSG-SKin/`) is preserved when copied over — a documented assumption, not a hardcoded absolute path.
+- ✅ Dataset/checkpoint paths configurable, not hardcoded — `--checkpoint`, `--metadata_csv`, `--output_dir` are all CLI arguments.
+- ✅ **CSG-SKin root resolution — was BROKEN on first real deployment, now fixed.** Both scripts originally hardcoded `Path(__file__).resolve().parents[2] / "CSG-SKin"`, assuming `paper-3/` sits *beside* `CSG-SKin/` (true locally). The actual GPU server deployment nests `paper-3/` *inside* `CSG-SKin/` (`CSG-SKin/paper-3/scripts/...`), under which that hardcoded parent-count resolves to a nonexistent `CSG-SKin/CSG-SKin`, producing `ModuleNotFoundError: No module named 'src'` — confirmed by the server's actual `--help` run. Fixed by extracting a shared `scripts/_repo_paths.py::find_csg_skin_root()`, which locates CSG-SKin's root by searching for a marker file (`src/utils/ood_metrics.py`) as either an ancestor of the script or a `CSG-SKin`-named sibling of any ancestor, with an explicit `CSG_SKIN_ROOT` env var override for any layout neither heuristic covers. Both `geometry_diagnostics.py` and `extract_embeddings_e1.py` now use this shared resolver instead of two independent hardcoded assumptions. **Verified in this session under both layouts** (actual local sibling layout, and a constructed copy reproducing the server's nested layout at `/tmp/nested_test/CSG-SKin/paper-3/`) — both now fail at the identical, already-documented `pytorch_lightning` point instead of at path resolution.
 
 **Verdict: BLOCKED**, on two external preconditions only (`pytorch-lightning`/`torchmetrics` installation per `environment_requirements.md`; real checkpoint + dataset paths per the GPU server). Everything checkable without those two preconditions has been checked, and two real issues were found and fixed in the process rather than deferred.
 
@@ -72,11 +73,16 @@ Running `geometry_diagnostics.py` created a `scripts/__pycache__/` directory. `p
 
 ---
 
+## `scripts/_repo_paths.py` — **READY**
+
+Added after first real server deployment surfaced the parent-count bug described above. Pure path-resolution logic, no experiment code. Verified in this session under both the actual local sibling layout and a constructed copy reproducing the server's nested layout (`CSG-SKin/paper-3/scripts/...`) — both resolve `CSG-SKin`'s root correctly and fail (only) at the same, already-documented `pytorch_lightning` import point.
+
 ## Summary
 
 | Script | Status | What's actually blocking it |
 |---|---|---|
 | `geometry_diagnostics.py` | **READY** | Nothing — runs today, verified. |
-| `extract_embeddings_e1.py` | **BLOCKED** | Two external preconditions (environment, data/checkpoints) — code itself checked as far as static analysis allows, two real issues found and fixed in the process. |
+| `_repo_paths.py` | **READY** | Nothing — verified under both known deployment layouts. |
+| `extract_embeddings_e1.py` | **BLOCKED** | Two external preconditions (environment, data/checkpoints) — code itself checked as far as static analysis allows, three real issues found and fixed in the process (missing `dm.setup()` ruled out as a false alarm; `strict=False` mismatch fixed; CSG-root path resolution fixed after real server feedback). |
 
-No script is INCOMPLETE or BROKEN. The intended end-state — `git pull` then `python extract_embeddings_e1.py ...` with no `ImportError`/`ModuleNotFound`/wrong-path debugging loop on the server — depends on `environment_requirements.md`'s action items (server-side `pip freeze`, pinned `requirements-e1.txt`) and on real checkpoint/dataset paths being supplied, not on anything further to fix in this code.
+No script is INCOMPLETE or BROKEN. The intended end-state — `git pull` then `python extract_embeddings_e1.py ...` with no `ImportError`/`ModuleNotFound`/wrong-path debugging loop on the server — depends on `environment_requirements.md`'s action items (server-side `pip freeze`, pinned `requirements-e1.txt`) and on real checkpoint/dataset paths being supplied. The one thing that *did* need fixing after real deployment feedback (path resolution) has been fixed and verified under the server's actual layout, not just the local one.

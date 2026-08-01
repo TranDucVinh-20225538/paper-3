@@ -30,15 +30,17 @@ only imports from it.
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 from typing import NamedTuple
 
 import numpy as np
 
-# CSG-SKin is a sibling repo to paper-3/, not an installed package — mirror
-# CSG-SKin's own scripts' convention (sys.path insert of the repo root)
-# rather than duplicating compute_mahalanobis_params_from_arrays's logic.
-_CSG_ROOT = Path(__file__).resolve().parents[2] / "CSG-SKin"
+# CSG-SKin is not an installed package. Its root is located via _repo_paths
+# (marker-file search, layout-agnostic) rather than a hardcoded parent-count,
+# since paper-3/ has been deployed both as a CSG-SKin sibling and nested
+# inside it -- see _repo_paths.py.
+from _repo_paths import find_csg_skin_root  # noqa: E402
+
+_CSG_ROOT = find_csg_skin_root(__file__)
 if str(_CSG_ROOT) not in sys.path:
     sys.path.insert(0, str(_CSG_ROOT))
 

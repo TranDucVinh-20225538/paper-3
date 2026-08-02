@@ -89,8 +89,8 @@ runB,csg,62,../checkpoints/csg_lite/runB_s62/best-28.ckpt,cosine,0.4077625699010
 runB,csg,62,../checkpoints/csg_lite/runB_s62/best-28.ckpt,knn_k1,0.3906409122115266,0.9587527136372607
 runB,csg,62,../checkpoints/csg_lite/runB_s62/best-28.ckpt,knn_k10,0.3814867288344882,0.954213538582988
 runB,csg,62,../checkpoints/csg_lite/runB_s62/best-28.ckpt,knn_k50,0.37913821630877315,0.9486875863430038
-baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s62/best-29.ckpt,mahalanobis,0.8368451951852144,0.5705545687783699
-baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s62/best-29.ckpt,cosine,0.6984140541118035,0.865403591868956
-baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s62/best-29.ckpt,knn_k1,0.8542877916338815,0.5328596802841918
-baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s62/best-29.ckpt,knn_k10,0.8346063961368488,0.6070653246496941
-baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s62/best-29.ckpt,knn_k50,0.820463405681535,0.6392342609038879
+baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s42/best-20.ckpt,mahalanobis,0.8625956138999376,0.4586540359186896
+baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s42/best-20.ckpt,cosine,0.7151688694384715,0.8312611012433393
+baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s42/best-20.ckpt,knn_k1,0.8650417735675283,0.42984014209591476
+baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s42/best-20.ckpt,knn_k10,0.8528938937128466,0.47325833826721925
+baseline_soft,baseline,42,../checkpoints/baseline/baseline_soft_s42/best-20.ckpt,knn_k50,0.8443357701319294,0.507400828892836

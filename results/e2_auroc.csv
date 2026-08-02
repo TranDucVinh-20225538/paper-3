@@ -9,6 +9,11 @@ runB_orth1,csg,52,../checkpoints/csg_lite/runB_orth1_s52/best-32.ckpt,0.40322313
 runB_orth1,csg,62,../checkpoints/csg_lite/runB_orth1_s62/best-34.ckpt,0.44083150019503664,0.9723702388000789
 runB_orth1,csg,72,../checkpoints/csg_lite/runB_orth1_s72/best-35.ckpt,0.4148093527583299,0.9707913953029406
 runB_orth1,csg,82,../checkpoints/csg_lite/runB_orth1_s82/best-37.ckpt,0.40269148844989755,0.9717781724886521
+runA_grl,csg,42,../checkpoints/csg_lite/runA_grl_s42/best-38.ckpt,0.37053835437169774,0.9915137162028814
 runB,csg,42,../checkpoints/csg_lite/runB_s42/best-31.ckpt,0.40041279749528647,0.9818432997829091
+runA_grl,csg,52,../checkpoints/csg_lite/runA_grl_s52/best-37.ckpt,0.4199951288074871,0.9905269390171699
 runB,csg,52,../checkpoints/csg_lite/runB_s52/best-28.ckpt,0.4143946315198791,0.9848036313400435
+runA_grl,csg,62,../checkpoints/csg_lite/runA_grl_s62/best-34.ckpt,0.3850410590343531,0.9743437931715019
 runB,csg,62,../checkpoints/csg_lite/runB_s62/best-28.ckpt,0.3652292955853701,0.9883560292086047
+runA_grl,csg,72,../checkpoints/csg_lite/runA_grl_s72/best-35.ckpt,0.3924288768964114,0.9923031379514505
+runA_grl,csg,82,../checkpoints/csg_lite/runA_grl_s82/best-23.ckpt,0.43883724840831717,0.9761199921057825

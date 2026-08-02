@@ -67,6 +67,16 @@ eval_ood_benchmarks.py's methodology (loader, transform, split, scoring
 convention) is still reproduced exactly -- this is the one intentional,
 reasoned departure, not an oversight.
 
+NOT IMPLEMENTED HERE, BY DECISION: persisting raw per-sample distances for a
+post-hoc ID-vs-OOD distribution investigation (why AUROC<0.5) was drafted and
+then deliberately reverted -- that question is real but out of
+experiment_contract.md's pre-registered E2 scope, and adding it now would
+mean the script that produced the already-analyzed e2_auroc.csv is no longer
+the script in the repo. If this is picked up later (appendix / supplementary
+/ a future paper), re-add distance persistence to this file at that time,
+run it fresh, and treat it explicitly as a new, non-pre-registered
+investigation -- not a quiet extension of E2. See open_questions.md Q6.
+
 Does not implement batching or E2's Kendall/Jonckheere analysis -- this
 script's whole job is one checkpoint, one row, matching Task 3's scope for
 E1 before Task 4 looped it.
@@ -228,6 +238,14 @@ def compute_mahalanobis_auroc_fpr95(
     )
     s_id = ood_metrics.mahalanobis_min_squared_distances(z_id, means, precision)
     s_ood = ood_metrics.mahalanobis_min_squared_distances(z_ood, means, precision)
+
+    # TEMPORARY DEBUG -- cheap ROI check before committing to a full E2.5
+    # rerun (open_questions.md Q6). Remove once this one-checkpoint check
+    # has answered whether OOD < ID holds.
+    print("ID median:", np.median(s_id))
+    print("OOD median:", np.median(s_ood))
+    print("ID mean :", s_id.mean())
+    print("OOD mean:", s_ood.mean())
 
     y_ood_binary = np.concatenate([np.zeros(len(s_id), dtype=np.int64), np.ones(len(s_ood), dtype=np.int64)])
     scores = np.concatenate([s_id, s_ood])

@@ -65,3 +65,17 @@ Log only. Nothing here gets acted on until its own Action item is explicitly exe
 **Resolution**: `extract_auroc_e2.py`'s `REG_EPS` changed from `1e-3` to `1e-5`, matching `extract_embeddings_e1.py` exactly. This is now the one deliberate, documented departure from `eval_ood_benchmarks.py`'s literal values — every other part of its methodology (loader, transform, split, scoring convention) is still reproduced exactly. E1's precision matrix and E2's precision matrix for the same nominal (rung, seed) row are now the literal same fitted object, not two differently-regularized approximations of it — required for the paper's actual claim (geometry of *this* precision matrix explains AUROC) to be about one consistent thing.
 
 **Priority**: Resolved — was Medium while open.
+
+---
+
+## Q6. Why Mahalanobis AUROC is consistently below 0.5 — deferred, out of E2's pre-registered scope
+
+**Status**: Deferred. Not blocking. Not currently being investigated.
+
+**Context**: across all 13 primary-ladder checkpoints, Mahalanobis AUROC (ISIC-test vs. PAD-UFES) sits at ~0.37–0.44 — consistently below chance, not just "not great." Before treating this as either a bug or a finding, checked what's checkable without a new experiment: `build_id_ood_test_dataloaders` returns `(id_loader, ood_loader)` in that literal order (verified from `splits.py` source, not assumed); `extract_auroc_e2.py`'s label/score convention (`y=1` for OOD, higher min-squared-distance = more OOD-like) matches `eval_ood_benchmarks.py`'s exactly; `mahalanobis_min_squared_distances` is confirmed a true minimum over classes, not argmax or a prediction-conditioned distance; the train/id-test/ood-test loaders are confirmed to share one `eval_transform`, no train/test mismatch. None of these turned up a bug.
+
+What was **not** done, by decision, not oversight: inspecting the actual per-sample ID/OOD Mahalanobis distance distributions (histogram/KDE/ECDF/summary stats) to see directly whether `median(OOD) < median(ID))` holds, which would be the concrete evidence for "this is a genuine property of the representation" rather than an inference from AUROC alone. A working implementation of this (persisting raw distances in `extract_auroc_e2.py`, plus `analysis/analyze_e2_distances.py`) was drafted and then **deliberately reverted** — this investigation is real and well-motivated, but it is post-hoc (generated after seeing the result, not pre-registered in `experiment_contract.md`), and belongs in Discussion/future work/an appendix, not folded into E2's Results.
+
+**Action, if picked up later**: re-add distance persistence to `extract_auroc_e2.py`, re-run, and treat it explicitly as a new, separate, non-pre-registered investigation — not a quiet extension of E2's already-completed, already-analyzed scope.
+
+**Priority**: Deferred — real question, wrong time. Revisit only in appendix/supplementary/future-paper scope, not now.

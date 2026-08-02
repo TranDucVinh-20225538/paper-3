@@ -51,3 +51,17 @@ Log only. Nothing here gets acted on until its own Action item is explicitly exe
 **Updated**: `SPEC.md` §4 (E1/E2 experiment plan), `experiment_contract.md` (E1a/E1b, E2a/E2b split), `geometry_metric_audit.md` §6 and the C2 verdict note. No scripts modified.
 
 **Priority**: Resolved — was High while open, since it bore on whether the primary claim H3 is tested against was even a coherent single comparison.
+
+---
+
+## Q5. E1's geometry and E2's AUROC fit Mahalanobis with different `reg_eps`
+
+**Status**: Resolved.
+
+**Context**: `geometry_metric_audit.md` §3 (A1) already documented that CSG-SKin's own scripts use two different `reg_eps` values for the same `compute_mahalanobis_params_from_arrays` construction — `1e-5` (the function's own default, used by `train_csg.py`/`train_baseline.py`, and what `extract_embeddings_e1.py`'s geometry metrics use) vs. `1e-3` (explicitly passed by `eval_ood_scores.py`/`eval_ood_benchmarks.py`/`run_effb3_control.py`). This surfaced concretely while writing `extract_auroc_e2.py`, which initially replicated `eval_ood_benchmarks.py`'s `reg_eps=1e-3` for literal fidelity to the canonical script.
+
+**Investigation**: checked every occurrence of `reg_eps` in CSG-SKin before deciding. Findings: (1) `1e-5` is the library function's own default — every use of `1e-3` is an explicit override; (2) no comment anywhere in `eval_ood_benchmarks.py`, `run_effb3_control.py`, or `eval_ood_scores.py` justifies `1e-3` over the default; (3) `eval_ood_scores.py` exposes it as a CLI flag with `default=1e-3`, i.e. the original author treated it as an adjustable knob, not a fixed requirement; (4) `threats_to_validity.md` #2 designated `eval_ood_benchmarks.py` canonical for its correct *transform* (avoiding `train_csg.py`'s grayscale bug), never for its `reg_eps` choice; (5) Paper 3's E2 produces its own new `results/e2_auroc.csv`, not a reproduction of `eval_ood_benchmarks.py`'s own `ood_comparison.csv`, so there is no existing published number requiring bit-for-bit match; (6) this project already has direct empirical evidence `reg_eps=1e-5` is numerically safe at the scales involved — E1's actual server run used it successfully at `z_lesion` (d=16), and it was also used successfully (no numerical failure, only a speed problem fixed separately) at `baseline_soft`'s d=2048 during the Mardia profiling investigation.
+
+**Resolution**: `extract_auroc_e2.py`'s `REG_EPS` changed from `1e-3` to `1e-5`, matching `extract_embeddings_e1.py` exactly. This is now the one deliberate, documented departure from `eval_ood_benchmarks.py`'s literal values — every other part of its methodology (loader, transform, split, scoring convention) is still reproduced exactly. E1's precision matrix and E2's precision matrix for the same nominal (rung, seed) row are now the literal same fitted object, not two differently-regularized approximations of it — required for the paper's actual claim (geometry of *this* precision matrix explains AUROC) to be about one consistent thing.
+
+**Priority**: Resolved — was Medium while open.

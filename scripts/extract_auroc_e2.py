@@ -67,15 +67,19 @@ eval_ood_benchmarks.py's methodology (loader, transform, split, scoring
 convention) is still reproduced exactly -- this is the one intentional,
 reasoned departure, not an oversight.
 
-NOT IMPLEMENTED HERE, BY DECISION: persisting raw per-sample distances for a
-post-hoc ID-vs-OOD distribution investigation (why AUROC<0.5) was drafted and
-then deliberately reverted -- that question is real but out of
-experiment_contract.md's pre-registered E2 scope, and adding it now would
-mean the script that produced the already-analyzed e2_auroc.csv is no longer
-the script in the repo. If this is picked up later (appendix / supplementary
-/ a future paper), re-add distance persistence to this file at that time,
-run it fresh, and treat it explicitly as a new, non-pre-registered
-investigation -- not a quiet extension of E2. See open_questions.md Q6.
+E2.5 (open_questions.md Q6): also persists the raw per-sample Mahalanobis
+distances (results/e2_distances/{rung}_s{seed}.npz) and a
+distance_summary.csv row (id/ood mean, median, p95). This is explicitly a
+separate, non-pre-registered investigation into why AUROC<0.5, not a quiet
+extension of experiment_contract.md's E2 scope -- it does not change
+e2_auroc.csv's AUROC/FPR95 values or how they were computed, only adds a new
+side-output. History: drafted, then deliberately reverted (to keep the
+script matching exactly what produced the already-analyzed e2_auroc.csv
+while E2.5's value was still uncertain), then restored after a one-checkpoint
+temporary-print check (runA_grl s42) confirmed median(OOD)=7.82 <
+median(ID)=13.78 and mean(OOD)=16.47 < mean(ID)=20.64 -- crossing the
+pre-declared threshold for running this across the full 13-checkpoint ladder
+rather than leaving it for a future paper.
 
 Does not implement batching or E2's Kendall/Jonckheere analysis -- this
 script's whole job is one checkpoint, one row, matching Task 3's scope for
@@ -222,34 +226,91 @@ def load_model(checkpoint: Path, method: str, device):
     raise ValueError(f"Unknown method {method!r}, expected one of {METHODS}")
 
 
-def compute_mahalanobis_auroc_fpr95(
+def compute_mahalanobis_scores(
     z_train: np.ndarray, y_train: np.ndarray, z_id: np.ndarray, z_ood: np.ndarray,
     num_classes: int, reg_eps: float,
-) -> tuple[float, float]:
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Mirrors eval_ood_benchmarks.py::_compute_scores's Mahalanobis branch
     exactly: fit on (z_train, y_train), score z_id/z_ood by min squared
-    Mahalanobis distance to the nearest class mean, y=1 for OOD (PAD-UFES),
-    higher score = more OOD-like -- same label/score convention, not
-    reinterpreted.
+    Mahalanobis distance to the nearest class mean. Returns the raw
+    per-sample (s_id, s_ood) arrays -- not just AUROC/FPR95 derived from
+    them -- so the actual distance distributions can be inspected directly,
+    plus (means, precision) so compute_extended_diagnostics can reuse the
+    exact same fitted object rather than refitting. A one-checkpoint
+    temporary-print check (runA_grl s42, open_questions.md Q6) already
+    confirmed median(OOD)=7.82 < median(ID)=13.78 and mean(OOD)=16.47 <
+    mean(ID)=20.64 -- crossing the pre-declared threshold for running this
+    in full across all 13 checkpoints.
     """
     means, precision = ood_metrics.compute_mahalanobis_params_from_arrays(
         z_train, y_train, num_classes=num_classes, reg_eps=reg_eps
     )
     s_id = ood_metrics.mahalanobis_min_squared_distances(z_id, means, precision)
     s_ood = ood_metrics.mahalanobis_min_squared_distances(z_ood, means, precision)
+    return s_id, s_ood, means, precision
 
-    # TEMPORARY DEBUG -- cheap ROI check before committing to a full E2.5
-    # rerun (open_questions.md Q6). Remove once this one-checkpoint check
-    # has answered whether OOD < ID holds.
-    print("ID median:", np.median(s_id))
-    print("OOD median:", np.median(s_ood))
-    print("ID mean :", s_id.mean())
-    print("OOD mean:", s_ood.mean())
 
+def _all_class_squared_distances(z: np.ndarray, means: np.ndarray, precision: np.ndarray) -> np.ndarray:
+    """
+    (n, K) matrix of squared Mahalanobis distance from each sample to EVERY
+    class mean, not just the minimum ood_metrics.mahalanobis_min_squared_distances
+    returns. Looped over K classes (K=8, cheap) with a vectorized BLAS matmul
+    per class -- same pattern as geometry_diagnostics.py's
+    _squared_mahalanobis_distances, not CSG's own O(n*K) pure-Python double
+    loop. Needed to recover the nearest-centroid PREDICTED class (argmin),
+    which the min-only function discards.
+    """
+    num_classes = means.shape[0]
+    d2 = np.empty((z.shape[0], num_classes), dtype=np.float64)
+    for c in range(num_classes):
+        diff = z - means[c]
+        d2[:, c] = np.sum((diff @ precision) * diff, axis=1)
+    return d2
+
+
+def compute_extended_diagnostics(
+    z_id: np.ndarray, z_ood: np.ndarray, y_id: np.ndarray, y_ood: np.ndarray,
+    s_id: np.ndarray, s_ood: np.ndarray, means: np.ndarray, precision: np.ndarray,
+) -> dict:
+    """
+    Additional per-sample diagnostics beyond the min-distance scores AUROC
+    uses -- feature norms (norm-collapse check), true labels, and the
+    nearest-centroid predicted class -- computed once so future
+    investigation (norm collapse, class imbalance, class-specific distance)
+    never needs a rerun. Purely additive: does not affect AUROC/FPR95.
+
+    Cross-checks the vectorized argmin computation's own minimum against
+    s_id/s_ood (from CSG's own mahalanobis_min_squared_distances) and warns,
+    rather than silently proceeding, if they disagree beyond floating-point
+    tolerance -- the two must be measuring the same quantity for
+    predicted_class to be trustworthy.
+    """
+    d2_id = _all_class_squared_distances(z_id, means, precision)
+    d2_ood = _all_class_squared_distances(z_ood, means, precision)
+
+    if not np.allclose(d2_id.min(axis=1), s_id, rtol=1e-5, atol=1e-3):
+        print("[extract_auroc_e2] WARNING: vectorized per-class min distance (ID) does not match "
+              "ood_metrics.mahalanobis_min_squared_distances -- predicted_class_id may be unreliable.")
+    if not np.allclose(d2_ood.min(axis=1), s_ood, rtol=1e-5, atol=1e-3):
+        print("[extract_auroc_e2] WARNING: vectorized per-class min distance (OOD) does not match "
+              "ood_metrics.mahalanobis_min_squared_distances -- predicted_class_ood may be unreliable.")
+
+    return {
+        "feature_norm_id": np.linalg.norm(z_id, axis=1),
+        "feature_norm_ood": np.linalg.norm(z_ood, axis=1),
+        "labels_id": y_id,
+        "labels_ood": y_ood,
+        "predicted_class_id": d2_id.argmin(axis=1),
+        "predicted_class_ood": d2_ood.argmin(axis=1),
+    }
+
+
+def auroc_fpr95_from_scores(s_id: np.ndarray, s_ood: np.ndarray) -> tuple[float, float]:
+    """y=1 for OOD (PAD-UFES), higher score = more OOD-like -- same label/score convention as
+    eval_ood_benchmarks.py, not reinterpreted."""
     y_ood_binary = np.concatenate([np.zeros(len(s_id), dtype=np.int64), np.ones(len(s_ood), dtype=np.int64)])
     scores = np.concatenate([s_id, s_ood])
-
     auroc = float(roc_auc_score(y_ood_binary, scores))
     fpr95 = ood_metrics.fpr_at_95_tpr(y_ood_binary, scores)
     return auroc, fpr95
@@ -264,6 +325,46 @@ def append_auroc_row(csv_path: Path, row: dict) -> None:
         if write_header:
             writer.writeheader()
         writer.writerow(row)
+
+
+def append_distance_summary_row(csv_path: Path, row: dict) -> None:
+    fieldnames = [
+        "rung", "method", "seed", "checkpoint_path",
+        "id_n", "id_mean", "id_median", "id_p95",
+        "ood_n", "ood_mean", "ood_median", "ood_p95",
+    ]
+    write_header = not csv_path.exists()
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    with csv_path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def save_raw_distances(npz_dir: Path, rung: str, seed: int, checkpoint_path: str,
+                        s_id: np.ndarray, s_ood: np.ndarray, diagnostics: dict) -> Path:
+    """
+    Persists the full per-sample distance arrays and the extended
+    diagnostics (feature norms, true labels, nearest-centroid predicted
+    class) -- not just distance_summary.csv's mean/median/p95, which can
+    hide a bimodal or overlapping distribution, and not just the distances
+    alone, which can't answer norm-collapse / class-imbalance / class-specific
+    questions without a rerun. A few extra MB per checkpoint now, in
+    exchange for never needing to re-load a checkpoint to answer those
+    questions later.
+    """
+    npz_dir.mkdir(parents=True, exist_ok=True)
+    path = npz_dir / f"{rung}_s{seed}.npz"
+    np.savez(
+        path,
+        s_id=s_id, s_ood=s_ood,
+        feature_norm_id=diagnostics["feature_norm_id"], feature_norm_ood=diagnostics["feature_norm_ood"],
+        labels_id=diagnostics["labels_id"], labels_ood=diagnostics["labels_ood"],
+        predicted_class_id=diagnostics["predicted_class_id"], predicted_class_ood=diagnostics["predicted_class_ood"],
+        rung=rung, seed=seed, checkpoint_path=checkpoint_path,
+    )
+    return path
 
 
 def main():
@@ -292,10 +393,13 @@ def main():
 
     model, extract_fn = load_model(checkpoint, args.method, device)
     z_train, y_train = extract_fn(model, train_loader, device)
-    z_id, _y_id = extract_fn(model, id_loader, device)
-    z_ood, _y_ood = extract_fn(model, ood_loader, device)
+    z_id, y_id = extract_fn(model, id_loader, device)
+    z_ood, y_ood = extract_fn(model, ood_loader, device)
 
-    auroc, fpr95 = compute_mahalanobis_auroc_fpr95(z_train, y_train, z_id, z_ood, NUM_CLASSES, REG_EPS)
+    s_id, s_ood, means, precision = compute_mahalanobis_scores(z_train, y_train, z_id, z_ood, NUM_CLASSES, REG_EPS)
+    auroc, fpr95 = auroc_fpr95_from_scores(s_id, s_ood)
+
+    output_dir = Path(args.output_dir)
 
     row = {
         "rung": args.rung,
@@ -305,11 +409,34 @@ def main():
         "auroc": auroc,
         "fpr95": fpr95,
     }
-    output_dir = Path(args.output_dir)
     append_auroc_row(output_dir / "e2_auroc.csv", row)
+
+    # E2.5 (open_questions.md Q6, restored + extended): persist the raw
+    # per-sample distances AND feature norms / true labels / nearest-centroid
+    # predicted class -- saving all of it now (a few extra MB per checkpoint)
+    # means norm-collapse, class-imbalance, and class-specific-distance
+    # questions can be answered later without reloading any checkpoint. A
+    # one-checkpoint temporary-print check already confirmed OOD < ID on both
+    # mean and median for runA_grl s42, crossing the pre-declared threshold
+    # for running this across the full ladder -- see
+    # analysis/analyze_e2_distances.py for histogram/KDE/ECDF/boxplot.
+    diagnostics = compute_extended_diagnostics(z_id, z_ood, y_id, y_ood, s_id, s_ood, means, precision)
+    npz_path = save_raw_distances(
+        output_dir / "e2_distances", args.rung, args.seed, str(checkpoint), s_id, s_ood, diagnostics
+    )
+    distance_row = {
+        "rung": args.rung, "method": args.method, "seed": args.seed, "checkpoint_path": str(checkpoint),
+        "id_n": len(s_id), "id_mean": float(np.mean(s_id)), "id_median": float(np.median(s_id)),
+        "id_p95": float(np.percentile(s_id, 95)),
+        "ood_n": len(s_ood), "ood_mean": float(np.mean(s_ood)), "ood_median": float(np.median(s_ood)),
+        "ood_p95": float(np.percentile(s_ood, 95)),
+    }
+    append_distance_summary_row(output_dir / "distance_summary.csv", distance_row)
 
     print(f"AUROC={auroc:.4f} FPR95={fpr95:.4f}")
     print(row)
+    print(f"Raw distances saved: {npz_path}")
+    print(distance_row)
 
 
 if __name__ == "__main__":

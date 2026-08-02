@@ -64,6 +64,19 @@ Answers a different, complementary question — *does introducing the disentangl
 
 **Output**: an association result for the primary ladder (Kendall's τ + scatter), and a separate descriptive comparison against the baseline reference.
 
+### E2.6 — Diagnostic: is Mahalanobis's null AUROC a representation failure or a scoring-rule failure?
+
+**Motivation**: E2's primary test found no association between geometry and Mahalanobis AUROC — AUROC sits at ~0.39–0.41 across the primary ladder regardless of condition number moving by two orders of magnitude (65→8257, `open_questions.md` Q6). Before concluding the representation change doesn't matter for reliability, this checks the alternative explanation: Mahalanobis's own Gaussian/shared-covariance assumption is confirmed catastrophically violated (Mardia bootstrap z-scores 191–824 across all 13 checkpoints) and that violation does not improve with more disentanglement training either (τ=-0.168, p=0.52 against λ_orth). If an assumption-light scorer computed on the *identical* embeddings tracks geometry — or simply achieves materially higher AUROC — where Mahalanobis does not, the failure relocates from "representation" to "scoring rule," which changes Paper 3's central claim.
+
+**Design**: two additional OOD scores, computed on the same 16-d `z_lesion` embeddings, same 13 checkpoints, same ISIC-train/ISIC-test/PAD-UFES split already used for E2 — formulas and hyperparameters locked here, before implementation (`open_questions.md` Q6 update):
+
+- **Cosine-to-centroid**: same per-class-centroid structure as Mahalanobis, covariance/Gaussian step dropped — isolates exactly one variable.
+- **k-NN distance** (Sun et al. 2022-style): pooled across all 8 classes (no per-class structure at all — the maximally assumption-light instrument in this comparison), reference pool is the full ISIC-train set, never subsampled. Primary k=10, with k∈{1,50} reported as a pre-registered robustness grid regardless of outcome.
+
+**Output**: `results/e2_6_scorer_comparison.csv` (per rung/seed/scorer AUROC+FPR95) and a per-scorer Kendall's τ vs. rung, all scorers reported.
+
+**Status**: diagnostic/exploratory, same framing as E1b/E2b/E4 — no new statistical pass/fail criterion invented after already seeing E2's null result. Full pre-registered formulas in `docs/experiment_contract.md`.
+
 ### E3 — Validate on a strictly held-out third domain (HAM10000)
 
 **Objective**: check that the E1↔E2 relationship isn't an artifact of the ISIC/PAD-UFES split used everywhere else in Papers 1 and 2, by re-running the same geometry/reliability measurement on a domain neither CSG-SKin nor DST-Skin was trained or tuned on.

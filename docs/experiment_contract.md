@@ -76,6 +76,31 @@
 
 ---
 
+## E2.6 — Diagnostic: alternative scorers on the same embeddings (locked before implementation)
+
+**Design note** (`open_questions.md` Q6): E2a found no association between geometry and Mahalanobis AUROC, and separate checks ruled out an implementation bug, a dominant NV attractor, and a large norm-collapse effect as the explanation — while confirming Mahalanobis's own Gaussian assumption is catastrophically and training-invariantly violated (Mardia z 191–824, no trend with λ_orth). This experiment asks whether an assumption-light scorer on the *same* embeddings behaves differently, to distinguish "representation problem" from "scoring-rule problem." Every formula and hyperparameter below is fixed **before** any code is written or rerun executed, specifically to prevent selecting a scorer/hyperparameter after seeing which one looks best — each of the two decisions below (pool structure, k) was an explicit user sign-off, not a default picked silently.
+
+**Input**
+- The same 13 checkpoints as E1a/E2a, same explicit-file-path manifest.
+- Raw `z_lesion` embeddings (16-d) for all three splits per checkpoint: ISIC-train (the same set already used to fit Mahalanobis's per-class means/covariance), ISIC-test (ID), PAD-UFES (OOD). Saved in full, not subsampled — a k-NN reference pool must be the complete train set or k-th-neighbor distances are not meaningful. (Approx. 1.5 MB/checkpoint × 13 ≈ 20 MB total at 16-d float32 — this is also the data needed for a future UMAP illustration, satisfied as a side effect, not a separate save path.)
+- Per-class means already fit for Mahalanobis (reused, not refit).
+
+**Scorer formulas** (all: higher score = more OOD-like, matching the existing `auroc_fpr95_from_scores` convention; label OOD=1, ID=0)
+
+1. **Mahalanobis** — unchanged, reused from E2a's existing `s_id`/`s_ood`. Included only as the comparison baseline, not recomputed.
+2. **Cosine-to-centroid** — `score(z) = min_c [1 − cosine_similarity(z, mean_c)]`, `mean_c` = the same per-class means used for Mahalanobis, min over the 8 ISIC classes. No normalization decision needed (cosine similarity is scale-invariant in both arguments by construction) — the only change from Mahalanobis is dropping the covariance/precision-matrix step, isolating exactly that one variable.
+3. **k-NN distance** (Sun et al. 2022-style) — `score(z) = ||z − z_(k)||₂`, where `z_(k)` is the k-th nearest neighbor of `z` in the **pooled** ISIC-train set (all 8 classes merged into one reference pool — no per-class split, no covariance, no distributional assumption of any kind; this is deliberately the most assumption-free instrument in the comparison, decided explicitly over a per-class-then-min variant that would have kept too much structural similarity to Mahalanobis to serve as a real contrast). Primary/headline: **k=10**. Pre-registered robustness grid, reported in full regardless of result: **k ∈ {1, 10, 50}**. No k value is ever selected or suppressed after seeing its AUROC.
+
+**Expected output**
+- `results/e2_6_scorer_comparison.csv`: one row per (rung, seed, scorer), `scorer ∈ {mahalanobis, cosine, knn_k1, knn_k10, knn_k50}`, columns `auroc, fpr95` (same computation as E2a's `auroc_fpr95_from_scores`).
+- Per-scorer Kendall's τ vs. rung order (same exact-permutation machinery as E1a/E2a), for all 5 scorer rows — not just whichever looks most interesting.
+- A raw-embedding artifact (`results/e2_distances/{rung}_s{seed}_z.npz` or equivalent), saved as a byproduct of the input requirement above, available for any future exploratory visualization (e.g. UMAP) without a further rerun.
+
+**Success / Failure**
+- No new statistical pass/fail criterion is introduced here — this is diagnostic/exploratory, same framing as E1b/E2b/E4, precisely because it was designed *after* E2a's result was already known (a formal criterion invented at that point would not be a genuine pre-registration, regardless of how it's labeled). What is locked is **only** the formulas, hyperparameters, and full-grid reporting requirement above, so that no scorer or k value can be silently dropped from the writeup after implementation. The interpretive question this answers — "does any alternative scorer materially outperform Mahalanobis and/or track λ_orth where Mahalanobis does not" — is reported descriptively against the numbers this produces, not against a threshold decided sight-unseen.
+
+---
+
 ## E3 — Replication on HAM10000
 
 **Input**

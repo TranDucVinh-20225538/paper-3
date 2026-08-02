@@ -40,12 +40,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import gaussian_kde
 
 from analyze_e1 import PRIMARY_RUNGS, RUNG_LAMBDA
+from _id_ood_plots import make_boxplot, make_distribution_figure
 
 
 def load_distance_summary(csv_path: Path) -> pd.DataFrame:
@@ -73,76 +72,6 @@ def pooled_distances_by_rung(npz_dir: Path, summary: pd.DataFrame) -> dict:
             all_ood.append(s_ood)
         pooled[rung] = (np.concatenate(all_id), np.concatenate(all_ood))
     return pooled
-
-
-def make_distribution_figure(pooled: dict, out_dir: Path) -> None:
-    fig, axes = plt.subplots(3, len(PRIMARY_RUNGS), figsize=(5 * len(PRIMARY_RUNGS), 12))
-
-    for col, rung in enumerate(PRIMARY_RUNGS):
-        s_id, s_ood = pooled[rung]
-        lo, hi = min(s_id.min(), s_ood.min()), max(s_id.max(), s_ood.max())
-        bins = np.linspace(lo, hi, 40)
-
-        ax = axes[0, col]
-        ax.hist(s_id, bins=bins, alpha=0.5, label=f"ID (n={len(s_id)})", color="tab:blue", density=True)
-        ax.hist(s_ood, bins=bins, alpha=0.5, label=f"OOD (n={len(s_ood)})", color="tab:red", density=True)
-        ax.set_title(f"{rung} ($\\lambda$={RUNG_LAMBDA[rung]:g}) -- histogram", fontsize=10)
-        ax.legend(fontsize=8)
-        ax.set_xlabel("Mahalanobis squared distance", fontsize=8)
-
-        ax = axes[1, col]
-        xs = np.linspace(lo, hi, 400)
-        kde_id, kde_ood = gaussian_kde(s_id)(xs), gaussian_kde(s_ood)(xs)
-        ax.plot(xs, kde_id, color="tab:blue", label="ID")
-        ax.plot(xs, kde_ood, color="tab:red", label="OOD")
-        ax.fill_between(xs, kde_id, alpha=0.2, color="tab:blue")
-        ax.fill_between(xs, kde_ood, alpha=0.2, color="tab:red")
-        ax.set_title(f"{rung} -- KDE", fontsize=10)
-        ax.legend(fontsize=8)
-        ax.set_xlabel("Mahalanobis squared distance", fontsize=8)
-
-        ax = axes[2, col]
-        for data, color, label in [(s_id, "tab:blue", "ID"), (s_ood, "tab:red", "OOD")]:
-            xs_sorted = np.sort(data)
-            ys = np.arange(1, len(xs_sorted) + 1) / len(xs_sorted)
-            ax.plot(xs_sorted, ys, color=color, label=label)
-        ax.set_title(f"{rung} -- ECDF", fontsize=10)
-        ax.legend(fontsize=8)
-        ax.set_xlabel("Mahalanobis squared distance", fontsize=8)
-        ax.set_ylabel("cumulative probability", fontsize=8)
-
-    fig.suptitle(
-        "E2.5 -- ID vs OOD Mahalanobis distance distributions, pooled across seeds per rung\n"
-        "(baseline_soft categorical reference not shown, same scope as E1a/E2a)",
-        fontsize=11,
-    )
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
-    out_dir.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_dir / "figure_e2_5_distance_distributions.png", dpi=200)
-    fig.savefig(out_dir / "figure_e2_5_distance_distributions.pdf")
-    plt.close(fig)
-
-
-def make_boxplot(pooled: dict, out_dir: Path) -> None:
-    fig, ax = plt.subplots(figsize=(8, 5))
-    data, labels, colors = [], [], []
-    palette = {"ID": "tab:blue", "OOD": "tab:red"}
-    for rung in PRIMARY_RUNGS:
-        s_id, s_ood = pooled[rung]
-        data += [s_id, s_ood]
-        labels += [f"{rung}\nID", f"{rung}\nOOD"]
-        colors += [palette["ID"], palette["OOD"]]
-    bp = ax.boxplot(data, tick_labels=labels, patch_artist=True, showfliers=False)
-    for patch, color in zip(bp["boxes"], colors):
-        patch.set_facecolor(color)
-        patch.set_alpha(0.6)
-    ax.set_ylabel("Mahalanobis squared distance")
-    ax.set_title("ID vs OOD Mahalanobis distance, per rung (pooled across seeds)")
-    fig.tight_layout()
-    out_dir.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out_dir / "figure_e2_5_boxplot.png", dpi=200)
-    fig.savefig(out_dir / "figure_e2_5_boxplot.pdf")
-    plt.close(fig)
 
 
 def main():
@@ -183,8 +112,10 @@ def main():
         "is a visual/shape question -- see the histogram/KDE/ECDF figure, not this printed line alone."
     )
 
-    make_distribution_figure(pooled, Path(args.figures_dir))
-    make_boxplot(pooled, Path(args.figures_dir))
+    make_distribution_figure(
+        pooled, Path(args.figures_dir), "Mahalanobis squared distance", "figure_e2_5_distance_distributions", RUNG_LAMBDA
+    )
+    make_boxplot(pooled, Path(args.figures_dir), "Mahalanobis squared distance", "figure_e2_5_boxplot")
     print(f"\n[analyze_e2_distances] Figures written to {args.figures_dir}/figure_e2_5_distance_distributions.{{png,pdf}} "
           f"and figure_e2_5_boxplot.{{png,pdf}}")
 

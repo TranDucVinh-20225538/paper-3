@@ -84,6 +84,41 @@ rather than leaving it for a future paper.
 Does not implement batching or E2's Kendall/Jonckheere analysis -- this
 script's whole job is one checkpoint, one row, matching Task 3's scope for
 E1 before Task 4 looped it.
+
+E2.6 (open_questions.md Q6, experiment_contract.md): E2a found no
+association between geometry and Mahalanobis AUROC, and E2.5 ruled out an
+implementation bug, a dominant NV attractor, and a large norm-collapse
+effect as the explanation, while confirming Mahalanobis's own Gaussian
+assumption is catastrophically and training-invariantly violated (Mardia z
+191-824, no trend with lambda_orth). This adds exactly two more scorers on
+the SAME embeddings, to test whether the failure is in Mahalanobis
+specifically or in the representation generally -- both formulas locked in
+experiment_contract.md BEFORE this code was written:
+
+  - Cosine-to-centroid: min_c [1 - cosine_similarity(z, mean_c)], reusing
+    the exact same per-class `means` already fit for Mahalanobis. Isolates
+    one variable: drop the covariance/precision-matrix step, keep the
+    nearest-centroid structure.
+  - Pooled k-NN distance (Sun et al. 2022-style): Euclidean distance to the
+    k-th nearest neighbor in the full ISIC-train set, ALL classes pooled
+    together -- no per-class structure, no covariance, no distributional
+    assumption at all (decided explicitly over a per-class-then-min variant,
+    which would have kept too much structural similarity to Mahalanobis to
+    serve as a real contrast). K_VALUES = (1, 10, 50); k=10 is the
+    pre-registered primary/headline value, {1, 50} are pre-registered
+    robustness grid points -- all three are always computed and written,
+    never selected after seeing which looks best.
+
+Also persists the full raw z_lesion embeddings (train/id/ood, never
+subsampled -- a k-NN reference pool must be the complete train set or
+k-th-neighbor distances aren't meaningful) as a byproduct, which also
+resolves the separate UMAP-visualization blocker without a further rerun.
+
+Rerun note: e2_auroc.csv and distance_summary.csv are append-only writers
+(same as the original E2.5 restore) -- clear/rename them before re-running
+run_e2_all.sh, or the duplicate-row check in analyze_e2.py will (correctly)
+reject the merge. e2_6_scorer_comparison.csv is a new file as of this
+change; no pre-existing rows to worry about on the first run.
 """
 
 from __future__ import annotations
@@ -98,6 +133,7 @@ import pytorch_lightning as pl
 import torch
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import NearestNeighbors
 from torch.utils.data import DataLoader
 
 # CSG-SKin's root is located via _repo_paths (marker-file search,
@@ -122,6 +158,8 @@ NUM_CLASSES = 8  # CSG-SKin's fixed 8-class ISIC label space (src/datasets/const
 REG_EPS = 1e-5  # deliberately NOT eval_ood_benchmarks.py's 1e-3 -- matches E1's geometry metrics instead, per open_questions.md Q5
 GLOBAL_SEED = 42  # eval_ood_benchmarks.py's own fixed seed, independent of the checkpoint's training seed
 METHODS = {"baseline", "csg", "effb3_single"}
+K_VALUES = (1, 10, 50)  # E2.6 k-NN grid, pre-registered in experiment_contract.md -- all always reported
+PRIMARY_K = 10  # E2.6 headline value, per experiment_contract.md; the other K_VALUES are the robustness grid
 
 
 def _require_explicit_file(path_str: str) -> Path:
@@ -251,6 +289,40 @@ def compute_mahalanobis_scores(
     return s_id, s_ood, means, precision
 
 
+def cosine_centroid_scores(z: np.ndarray, means: np.ndarray) -> np.ndarray:
+    """
+    E2.6 scorer #2 (experiment_contract.md): score(z) = min_c [1 - cosine_similarity(z, mean_c)].
+    `means` is the SAME per-class means array already fit for Mahalanobis (compute_mahalanobis_scores),
+    reused rather than refit -- the only change from Mahalanobis is dropping the covariance/precision
+    step, isolating exactly that one variable. No normalization decision needed: cosine similarity is
+    scale-invariant in both arguments by construction.
+    """
+    z_unit = z / np.linalg.norm(z, axis=1, keepdims=True)
+    means_unit = means / np.linalg.norm(means, axis=1, keepdims=True)
+    cosine_sim = z_unit @ means_unit.T  # (n, K)
+    return (1.0 - cosine_sim).min(axis=1)
+
+
+def compute_knn_scores(
+    z_train: np.ndarray, z_id: np.ndarray, z_ood: np.ndarray, k_values: tuple[int, ...],
+) -> dict[int, tuple[np.ndarray, np.ndarray]]:
+    """
+    E2.6 scorer #3 (experiment_contract.md): pooled k-NN distance (Sun et al. 2022-style) --
+    Euclidean distance to the k-th nearest neighbor in the FULL ISIC-train set, all 8 classes
+    pooled together (no per-class structure, no covariance, the maximally assumption-free
+    instrument in this comparison -- decided explicitly over a per-class-then-min variant that
+    would have kept too much structural similarity to Mahalanobis to serve as a real contrast).
+    z_train/z_id/z_ood are disjoint splits, so no self-match exclusion is needed. Fits one
+    NearestNeighbors index at k_max and slices it for every k in k_values, rather than refitting
+    per k.
+    """
+    k_max = max(k_values)
+    index = NearestNeighbors(n_neighbors=k_max).fit(z_train)
+    dist_id, _ = index.kneighbors(z_id)
+    dist_ood, _ = index.kneighbors(z_ood)
+    return {k: (dist_id[:, k - 1], dist_ood[:, k - 1]) for k in k_values}
+
+
 def _all_class_squared_distances(z: np.ndarray, means: np.ndarray, precision: np.ndarray) -> np.ndarray:
     """
     (n, K) matrix of squared Mahalanobis distance from each sample to EVERY
@@ -340,6 +412,42 @@ def append_distance_summary_row(csv_path: Path, row: dict) -> None:
         if write_header:
             writer.writeheader()
         writer.writerow(row)
+
+
+def append_scorer_comparison_row(csv_path: Path, row: dict) -> None:
+    fieldnames = ["rung", "method", "seed", "checkpoint_path", "scorer", "auroc", "fpr95"]
+    write_header = not csv_path.exists()
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    with csv_path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def save_raw_embeddings(
+    npz_dir: Path, rung: str, seed: int, checkpoint_path: str,
+    z_train: np.ndarray, y_train: np.ndarray, z_id: np.ndarray, y_id: np.ndarray,
+    z_ood: np.ndarray, y_ood: np.ndarray,
+) -> Path:
+    """
+    E2.6 input requirement (experiment_contract.md): the full raw z_lesion embeddings for all
+    three splits, never subsampled -- the k-NN reference pool must be the complete train set or
+    k-th-neighbor distances aren't meaningful. Byproduct: also resolves the UMAP-visualization
+    blocker, since UMAP can subsample from this full array at analysis time without a further
+    rerun. ~1.5MB/checkpoint at 16-d float32 (train+id+ood together), ~20MB total across 13
+    checkpoints.
+    """
+    npz_dir.mkdir(parents=True, exist_ok=True)
+    path = npz_dir / f"{rung}_s{seed}_z.npz"
+    np.savez(
+        path,
+        z_train=z_train, y_train=y_train,
+        z_id=z_id, y_id=y_id,
+        z_ood=z_ood, y_ood=y_ood,
+        rung=rung, seed=seed, checkpoint_path=checkpoint_path,
+    )
+    return path
 
 
 def save_raw_distances(npz_dir: Path, rung: str, seed: int, checkpoint_path: str,
@@ -437,6 +545,34 @@ def main():
     print(row)
     print(f"Raw distances saved: {npz_path}")
     print(distance_row)
+
+    # E2.6 (open_questions.md Q6 / experiment_contract.md): Cosine-to-centroid and pooled k-NN
+    # on the identical embeddings, formulas locked before this code was written. All K_VALUES
+    # are always computed and written -- k=10 (PRIMARY_K) is the headline value, {1,50} are the
+    # pre-registered robustness grid, none selected after seeing results.
+    cosine_s_id = cosine_centroid_scores(z_id, means)
+    cosine_s_ood = cosine_centroid_scores(z_ood, means)
+    knn_scores = compute_knn_scores(z_train, z_id, z_ood, K_VALUES)
+
+    scorer_scores = {"mahalanobis": (s_id, s_ood), "cosine": (cosine_s_id, cosine_s_ood)}
+    scorer_scores.update({f"knn_k{k}": scores for k, scores in knn_scores.items()})
+
+    scorer_comparison_path = output_dir / "e2_6_scorer_comparison.csv"
+    for scorer_name, (sc_id, sc_ood) in scorer_scores.items():
+        sc_auroc, sc_fpr95 = auroc_fpr95_from_scores(sc_id, sc_ood)
+        append_scorer_comparison_row(scorer_comparison_path, {
+            "rung": args.rung, "method": args.method, "seed": args.seed,
+            "checkpoint_path": str(checkpoint), "scorer": scorer_name,
+            "auroc": sc_auroc, "fpr95": sc_fpr95,
+        })
+        print(f"[E2.6] {scorer_name:10s} AUROC={sc_auroc:.4f} FPR95={sc_fpr95:.4f}")
+
+    z_path = save_raw_embeddings(
+        output_dir / "e2_distances", args.rung, args.seed, str(checkpoint),
+        z_train, y_train, z_id, y_id, z_ood, y_ood,
+    )
+    print(f"[E2.6] scorer comparison appended to {scorer_comparison_path}")
+    print(f"[E2.6] raw embeddings saved: {z_path}")
 
 
 if __name__ == "__main__":

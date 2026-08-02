@@ -6,3 +6,4 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
+paper-3/results/e1_embeddings/

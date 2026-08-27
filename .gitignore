@@ -35,3 +35,12 @@ paper/arxiv.zip
 
 # Pristine copy of the advisor-supplied manuscript folder, kept for diffing
 paper/_advisor_baseline/
+
+# Submission and archive packages: rebuilt from source, and the two data
+# archives are the 349 MB Zenodo payload (DOI 10.5281/zenodo.22130029)
+paper/*.tar.gz
+paper/e1_embeddings.zip
+paper/e2_distances.zip
+paper/supplementary_materials.zip
+paper/tmlr.zip
+paper/tmlr_full_for_review.zip

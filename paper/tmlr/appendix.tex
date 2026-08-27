@@ -1,0 +1,86 @@
+\appendix
+
+\section{Detectability, power, and interval estimates}
+\label{app:power}
+
+This appendix reports the three quantities defined in Section~\ref{sec:power}
+for every association tested in this paper. All of them are computed from the
+per-checkpoint results already reported in Section~\ref{sec:results}: no
+checkpoint is re-evaluated, no model is retrained, and no additional data are
+used.
+
+\subsection{What the designs could have detected}
+\label{app:power-design}
+
+Two permutation designs are used in this paper and they are not
+interchangeable. Design~A is continuous--continuous (a geometry metric against
+Mahalanobis AUROC, $n = 13$, tie-free), and its exact null runs over all $13!$
+orderings. Design~B tests an ordinal dose against a value (a geometry metric,
+scorer AUROC, or probe AUROC against $\lambda_{\mathrm{orth}}$), where the dose
+is tied by construction and the exact null runs over the $72{,}072$ distinct
+label arrangements consistent with the 5/5/3 rung counts, or the $1{,}680$
+arrangements of the 3/3/3 common-seed subset. Table~\ref{tab:power-design}
+gives $\tau_{\mathrm{crit}}$, the attainable maximum $|\tau|$, and power for
+each; Figure~\ref{fig:power}(A) shows the full power curves.
+
+Design~B's attainable maximum is $0.840$ rather than $1.000$ because a tied
+predictor caps $\tau_b$ below unity: with 5/5/3 rung sizes, a perfectly
+monotone ladder --- every checkpoint at a lower $\lambda_{\mathrm{orth}}$
+ranked below every checkpoint at a higher one --- yields exactly $\tau_b =
+0.840$. The condition-number result of Section~\ref{sec:geometry-changes}
+attains that ceiling.
+
+\input{tables/table_power_design}
+
+\subsection{What the data exclude}
+\label{app:power-ci}
+
+Table~\ref{tab:tau-ci} gives a 95\% bias-corrected and accelerated (BCa)
+bootstrap interval \citep{efron1987better} for every $\tau$ reported in the
+paper, over $2\times10^{4}$ resamples drawn \emph{within} rung so that the
+5/5/3 design is held fixed; $\lambda_{\mathrm{orth}}$ is a fixed design factor,
+not a sampled one, and resampling across rungs would bootstrap a quantity this
+experiment never estimated. Figure~\ref{fig:power}(B) plots the same intervals
+against the two designs' critical values.
+
+Resampling with replacement necessarily creates ties in a response that was
+tie-free as observed, and the two standard tie treatments pull an interval in
+opposite directions: the $\tau_b$ denominator $\sqrt{(n_0 - t_x)(n_0 - t_y)}$
+shrinks as ties accumulate and so inflates $|\tau|$ on tied resamples, whereas
+the design-normalized form $(2J - M)/\sqrt{M n_0}$ pins the denominator to the
+original design and cannot exceed the design ceiling. The two are identical on
+the observed data. Both were computed; over the tests reported here their endpoints
+differ by a median of $0.027$ and at most $0.091$, and the two agree on every
+$|\tau| = 0.3$ exclusion verdict, so no statement in this paper depends on the
+choice. Table~\ref{tab:tau-ci}
+reports the $\tau_b$ version.
+
+One case admits no valid interval. Where an observed $\tau$ attains the maximum
+its design permits --- condition number against $\lambda_{\mathrm{orth}}$,
+$\tau = 0.840$ --- every resample lies at or below the observed value, the
+resampling distribution is one-sided by construction, and a nominal interval
+computed from it can fail even to contain its own point estimate. That case is
+reported as a point without an interval, and its exact permutation $p$-value is
+the meaningful inference.
+
+\input{tables/table_tau_ci}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.93\linewidth]{figs/fig7_power.pdf}
+\caption{Effect-size and power bounds on this study's non-significant
+associations (exact permutation tests, $\alpha = 0.05$). (A) Power against the
+expected value of the reported statistic, for the three designs of
+Table~\ref{tab:power-design}; vertical dotted lines mark each design's
+$\tau_{\mathrm{crit}}$ and the dashed red line marks $|\tau| = 0.3$, the effect
+size fixed in the analysis plan (Section~\ref{sec:stats}). That value lies below
+every $\tau_{\mathrm{crit}}$, so the plan's conjunction of $|\tau| \geq 0.3$
+with significance at $\alpha = 0.05$ was unsatisfiable at these designs.
+(B) Observed Kendall's $\tau$ with 95\% BCa bootstrap intervals for all
+eighteen association tests reported in the paper. The shaded band spans
+$\pm\tau_{\mathrm{crit}}$ for the 5/5/3 ladder (dashed bounds); dotted bounds
+mark the continuous--continuous design. Condition number against
+$\lambda_{\mathrm{orth}}$ (star) sits at its design ceiling and is drawn without
+an interval, for the reason given in Section~\ref{app:power-ci}.}
+\label{fig:power}
+\end{figure}

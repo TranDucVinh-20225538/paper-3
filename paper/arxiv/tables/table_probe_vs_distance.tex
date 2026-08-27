@@ -1,0 +1,30 @@
+% table_probe_vs_distance.tex -- from results/table_e2_7_domain_vs_distance.csv
+% \input from sections/results.tex, Section~\ref{sec:results-probe} and
+% Section~\ref{sec:results-baseline}. The baseline_soft row is visually
+% separated (midrule + role column) so it is never read as a fourth ladder
+% point -- matches the rule that it never shares an axis/table block with
+% the ladder without being marked as a categorical reference.
+%
+% The primary-ladder pooled column now averages over all eight scorers in
+% Table~\ref{tab:scorer-summary} (E2.6's five distance-based plus E2.8's
+% Energy/ViM/density), not just the original five -- baseline_soft's own
+% pooled value still reflects only the five E2.6 scorers, since E2.8 was
+% scoped to the primary ladder only (Section~\ref{sec:results-scorer-comparison}).
+\begin{table}[htbp]
+\centering
+\caption{Non-probing scorer AUROC (pooled across Table~\ref{tab:scorer-summary}) vs.\ domain-probe AUROC, by rung. \texttt{baseline\_soft} is a descriptive reference, not a fourth ladder point (Section~\ref{sec:ladder}).}
+\label{tab:probe-vs-distance}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llcccc}
+\toprule
+Rung & Role & Scorers (pooled) & Probe (LR) & Probe (SVM) & Probe (RF) \\
+\midrule
+\texttt{runA\_grl}   & primary ladder & $0.411$ & $0.719$ & $0.717$ & $0.807$ \\
+\texttt{runB\_orth1} & primary ladder & $0.415$ & $0.741$ & $0.740$ & $0.815$ \\
+\texttt{runB}        & primary ladder & $0.421$ & $0.750$ & $0.751$ & $0.800$ \\
+\midrule
+\texttt{baseline\_soft} & categorical reference ($n=1$) & $0.828$ & $0.998$ & $0.997$ & $0.977$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

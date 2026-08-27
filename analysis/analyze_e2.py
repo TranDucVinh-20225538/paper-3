@@ -1,51 +1,25 @@
 """
-analyze_e2.py -- E2 primary ladder analysis: geometry <-> Mahalanobis AUROC.
+E2 -- does the geometry measured in E1 track Mahalanobis AUROC?
 
-Reads results/e1_geometry_metrics.csv and results/e2_auroc.csv and merges
-them on (rung, seed, checkpoint_path) -- not just (rung, seed) -- so that a
-checkpoint_path mismatch for the same nominal (rung, seed) row is a hard
-merge failure, not a silent join on a laxer key. This is the direct,
-data-level check for open_questions.md Q3 (eval_ood_benchmarks.py's own
-checkpoint resolution has the same directory-globbing bug find_checkpoint
-does): if E1 and E2 were ever computed from different checkpoints for the
-"same" nominal row, this script refuses to proceed rather than silently
-producing an association between two different models' geometry and AUROC.
+Merges results/e1_geometry_metrics.csv with results/e2_auroc.csv on
+(rung, seed, checkpoint_path) rather than (rung, seed), so that the same
+nominal row pointing at two different checkpoints is a merge failure instead
+of a silent join. This matters because CSG-SKin's find_checkpoint resolves a
+directory to its newest file by mtime and is confirmed to pick a
+non-best-val checkpoint for several runB/runB_orth1 seeds; without the
+checkpoint in the key, E1 geometry and E2 AUROC could describe different
+models and still merge cleanly.
 
-Validates, in order, before computing any statistic:
-  1. No duplicate (rung, seed) within either CSV (a checkpoint re-run
-     appended a second row via the append-only CSV writers in
-     extract_embeddings_e1.py / extract_auroc_e2.py, rather than the file
-     being regenerated cleanly).
-  2. No (rung, seed) pair present in both files with a DIFFERENT
-     checkpoint_path -- the literal Q3 failure mode.
-  3. Exactly 13 rows survive the merge (5 runA_grl + 5 runB_orth1 + 3 runB).
-     Anything else means a checkpoint is missing from one side, and this
-     script stops rather than silently analyzing a partial ladder.
+Three checks run before any statistic, each stopping the script with the
+offending keys listed: no duplicate (rung, seed) within either file; no
+(rung, seed) present in both with differing checkpoint_path; exactly 13 rows
+surviving the merge (5 runA_grl + 5 runB_orth1 + 3 runB).
 
-Any failure of 1-3 raises SystemExit with a specific, actionable message --
-not a bare assert -- and nothing downstream runs.
-
-Only after all three checks pass does it compute:
-  - Kendall's tau (metric vs. AUROC) for each of E1's five geometry metrics,
-    with scipy's EXACT p-value. This is legitimate here (unlike
-    analyze_e1.py's rung-index correlation, where ties are unavoidable and
-    scipy's "exact" silently isn't exact): metric and AUROC are both
-    continuous, effectively tie-free, which is exactly the case scipy's
-    exact method is built for and does not refuse. Verified against ties
-    programmatically before trusting it, and cross-checked against a
-    100,000-draw Monte Carlo permutation test as an extra guard -- the same
-    "verify scipy's method behavior, don't assume" lesson analyze_e1.py's
-    own Kendall's-tau bug already taught this project.
-  - Jonckheere-Terpstra on AUROC itself across the three ordered rungs (does
-    reliability trend with dose, independent of any one geometry metric) --
-    reuses analyze_e1.jonckheere_terpstra unchanged, same verified
-    full-enumeration implementation, not a second copy of it.
-  - Figure 2: one scatter panel per geometry metric (metric vs. AUROC,
-    points colored by rung).
-  - Table 2: per-rung AUROC/FPR95 mean +/- SD.
-
-Applies experiment_contract.md's E2a success/failure criteria mechanically
-against the actual data, the same way analyze_e1.py does for E1a.
+Then computes Kendall's tau per geometry metric against AUROC, Jonckheere-
+Terpstra for AUROC against rung order, Table 2 and Figure 2. Both variables
+here are continuous and tie-free, which is the case scipy's method="exact"
+is built for -- ties are checked for explicitly first, and the exact p-value
+is cross-checked against a 100,000-draw Monte Carlo permutation test.
 """
 
 from __future__ import annotations

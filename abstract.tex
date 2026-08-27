@@ -1,0 +1,34 @@
+% abstract.tex -- standalone abstract, \input into paper.tex and also kept
+% separate for submission portals that require the abstract as its own file.
+%
+% Rewritten against the LOCKED Introduction/Methods/Results/Discussion
+% (manuscript_blueprint.md status: all four sections locked). Replaces the
+% pre-lock draft written before E2.6/E2.7 were finalized in prose. Ends on
+% the plain slogan wording (matches Introduction's instance), per the
+% decision in manuscript_blueprint.md's slogan amendment: Discussion's
+% "The same information..." callback stays unique to the close of the paper.
+
+Distance-based reliability estimation assumes that a representation's
+geometry reflects its trustworthiness, yet this assumption is rarely tested
+under training interventions that reshape representation geometry directly.
+We audit this assumption using a disentanglement dose-response ladder. Three
+checkpoint families share the same architecture and a 16-dimensional
+representation, differing only in orthogonality strength
+($\lambda_{orth} = 0, 1, 5$). Representation geometry changed
+substantially with disentanglement strength: condition number shifted by
+two orders of magnitude (Kendall's $\tau=0.84$, exact $p=2.8\times10^{-5}$).
+This geometric change was not accompanied by any improvement in reliability
+estimation: Mahalanobis-distance AUROC (ISIC-test vs.\ PAD-UFES) remained
+flat and below chance ($\approx 0.40$) at every disentanglement level, with
+no significant association to any of five geometry metrics tested. The same
+failure was shared by cosine-to-centroid and pooled $k$-nearest-neighbor
+scorers -- three distinct scoring principles that all
+converged on the same result. A supervised probe with no access to the
+training objective nonetheless recovered domain membership from the
+identical embeddings at 0.72--0.81 AUROC across every disentanglement level,
+showing the relevant information was not absent from the representation.
+Collectively, these findings indicate that evaluating a learned representation by
+classification performance alone can overlook whether the information it
+contains is organized in a form downstream reliability estimators can
+actually use. Information can remain decodable while becoming inaccessible
+to distance-based reliability estimators.

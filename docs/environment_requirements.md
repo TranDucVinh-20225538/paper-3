@@ -6,7 +6,7 @@
 
 | Environment | CSG-SKin checkpoints | ISIC2018 / PAD-UFES data | DST-Skin | Role |
 |---|---|---|---|---|
-| Local (this Mac) | Present (`CSG-SKin/checkpoints` → `/Users/cubo/ResearchArtifacts/checkpoints`, verified) | Absent | Present, with its own checkpoints + data | `paper-3/` code development; DST-Skin-path (E4) work is the one thing actually runnable here today |
+| Local (this Mac) | Present (`CSG-SKin/checkpoints` → `~/ResearchArtifacts/checkpoints`, verified) | Absent | Present, with its own checkpoints + data | `paper-3/` code development; DST-Skin-path (E4) work is the one thing actually runnable here today |
 | GPU server | Present (assumed) | Present (assumed: ISIC2018 + PAD-UFES) | **Not present** | E1–E3 execution |
 
 This asymmetry matters for what follows: **E1–E3 (CSG-SKin path) can only run on the server; E4 (DST-Skin path), if implemented, can only run locally**, since DST-Skin isn't on the server at all. A single unified environment spec covering both paths doesn't correspond to any single machine this project actually uses — see §4.

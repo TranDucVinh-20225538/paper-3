@@ -1,0 +1,12 @@
+# Everything under analysis/ runs with these alone: no GPU, no checkpoints,
+# no dataset download. Verified with the versions in the right-hand column.
+numpy>=2.0           # 2.4.2
+scipy>=1.11          # 1.17.1
+pandas>=2.0          # 3.0.1
+matplotlib>=3.8      # 3.10.8
+scikit-learn>=1.4    # 1.8.0
+
+# Only needed to re-extract embeddings and scores from checkpoints
+# (scripts/), which also requires a local checkout of CSG-SKin:
+# torch>=2.0         # 2.10.0
+# pytorch-lightning

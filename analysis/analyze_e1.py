@@ -1,46 +1,30 @@
 """
-analyze_e1.py -- E1 primary ladder analysis: Table 1 + Figure 1.
+E1 -- Table 1 and Figure 1 for the primary disentanglement ladder.
 
-Reads results/e1_geometry_metrics.csv (extract_embeddings_e1.py's output) and
-produces the first real analysis artifacts of Paper 3's Results section:
+Reads results/e1_geometry_metrics.csv and produces:
 
-  - Table 1: mean +/- SD per metric, for the primary disentanglement ladder
-    (runA_grl -> runB_orth1 -> runB) and, separately, the baseline_soft
-    categorical reference if present.
-  - Kendall's tau (metric vs. rung order), with a TRUE exact permutation
-    p-value: full enumeration of every distinct way to assign the observed
-    values to rung labels matching the actual per-rung seed counts (e.g.
-    72,072 = C(13,5)*C(8,5) arrangements for the 5/5/3 full ladder). This is
-    NOT scipy's method="exact" (which raises ValueError given the ties rung
-    labels always produce -- multiple seeds share a rung), and it is NOT
-    scipy's method="auto" either: auto silently falls back to the asymptotic
-    normal approximation whenever ties are present, with no warning. An
-    earlier version of this script called that fallback "exact" by mistake;
-    cross-checking against a from-scratch Monte Carlo permutation test
-    caught the discrepancy (asymptotic p=0.0003 vs. the true exact p=0.000028
-    for condition_number) before it went in the paper. Full enumeration, not
-    an approximation, is what is reported now.
-  - Jonckheere-Terpstra trend test (ordered-groups alternative to pooled
-    Kendall's tau), using the SAME full-enumeration exact permutation null
-    (shared implementation, see exact_permutation_pvalue below) rather than
-    the standard normal approximation, which is not trusted at n=13-15 total
-    without a check -- the same class of problem the Mardia-kurtosis
-    null-calibration bug earlier in this project turned out to be. The
-    normal-approximation p-value is still reported alongside it, labeled as
-    such, for comparison against how this test is conventionally reported.
-  - Figure 1: seed-level scatter + mean +/- SD across the three primary
-    rungs, one panel per metric.
+  - Table 1: mean +/- SD per metric across runA_grl -> runB_orth1 -> runB,
+    with baseline_soft as a separate row.
+  - Kendall's tau, metric against rung order, with an exact permutation
+    p-value obtained by enumerating every label arrangement consistent with
+    the real per-rung seed counts (72,072 for the 5/5/3 ladder, 1,680 for
+    the 3/3/3 common-seed subset).
+  - Jonckheere-Terpstra, on the same enumeration. The normal-approximation
+    p-value is reported alongside it and labelled as such.
+  - Figure 1: per-seed scatter with mean +/- SD, one panel per metric.
 
-baseline_soft is deliberately NEVER plotted on the same axis as the primary
-ladder and NEVER included in the Kendall/Jonckheere trend tests -- per
-SPEC.md Sec 4 / open_questions.md Q4, it is a categorical reference, not a
-fourth ordinal point, and plotting it on the same continuum would visually
-reintroduce exactly the framing that design decision rejected. If present in
-the CSV, it is reported only as a separate row in Table 1.
+On the exact p-value: scipy's method="exact" refuses to run once rung labels
+introduce ties, and method="auto" falls back to the asymptotic normal
+approximation without warning. An earlier version of this script reported
+that fallback as exact; for condition number it gave p = 0.0003 against a
+true exact p = 0.000028. Full enumeration is what is reported now, and
+exact_permutation_pvalue is shared with the Jonckheere-Terpstra path so the
+two cannot drift apart.
 
-Does not implement checkpoint extraction or geometry computation -- purely a
-downstream consumer of results/e1_geometry_metrics.csv, per this project's
-scripts/ vs. analysis/ split (README.md layout).
+baseline_soft never enters the trend statistics and is never plotted on the
+ladder axis. Per SPEC.md 4 it is a categorical reference, not a fourth dose
+level: it differs from the CSG rungs in architecture, representation
+dimensionality and training recipe at once.
 """
 
 from __future__ import annotations

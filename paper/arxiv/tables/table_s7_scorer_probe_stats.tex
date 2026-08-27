@@ -1,0 +1,35 @@
+% table_s7_scorer_probe_stats.tex -- from results/e2_6_kendall_tau.csv,
+% results/e2_6_jonckheere_terpstra.csv, results/e2_7_kendall_tau.csv.
+% Full trend statistics for all eight scorers (five distance-based, three
+% non-distance-based added in E2.8) and all three domain probes, vs. rung
+% order (main text reports only the range of p-values in prose, plus
+% Energy's isolated trend discussed explicitly, Sections~
+% \ref{sec:results-scorer-comparison}--\ref{sec:results-probe}).
+\begin{table}[htbp]
+\centering
+\caption{AUROC vs.\ rung order, per scorer and per probe ($n=13$, exact-permutation tests).}
+\label{tab:s7-scorer-probe-stats}
+\small
+\begin{tabular}{llccc}
+\toprule
+& Scorer / probe & $\tau$ & $p$ (Kendall, exact) & $p_{JT}$ (exact) \\
+\midrule
+\multirow{5}{*}{Distance-based}
+& Mahalanobis        & $-0.076$ & $0.798$ & $0.650$ \\
+& Cosine-to-centroid & $0.321$  & $0.194$ & $0.097$ \\
+& $k$-NN ($k=1$)     & $-0.046$ & $0.898$ & $0.601$ \\
+& $k$-NN ($k=10$)    & $0.015$  & $1.000$ & $0.500$ \\
+& $k$-NN ($k=50$)    & $0.076$  & $0.798$ & $0.399$ \\
+\midrule
+\multirow{3}{*}{Non-distance-based}
+& Energy             & $0.443$  & $0.065$ & $0.032$ \\
+& ViM                & $0.076$  & $0.798$ & $0.399$ \\
+& Density (KDE)      & $0.015$  & $1.000$ & $0.500$ \\
+\midrule
+\multirow{3}{*}{Domain probes}
+& Logistic regression & $0.260$  & $0.302$ & --- \\
+& Linear SVM          & $0.260$  & $0.302$ & --- \\
+& Random forest       & $-0.107$ & $0.701$ & --- \\
+\bottomrule
+\end{tabular}
+\end{table}

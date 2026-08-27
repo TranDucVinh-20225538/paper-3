@@ -1,30 +1,24 @@
 """
-Geometry diagnostics for E1 (paper-3/SPEC.md).
+Geometry diagnostics for E1.
 
-Implements exactly the 3-metric minimal set justified in
-paper-3/docs/geometry_metric_audit.md §5 — no more, no fewer:
+Three metrics, one per concern raised in docs/geometry_metric_audit.md 5:
 
-  1. Condition number       (Concern 1: covariance conditioning)
-  2. Fisher ratio           (Concern 2: class-separation geometry)
-  3. Mardia's kurtosis      (Concern 3: distributional shape / Gaussianity)
+    condition number    covariance conditioning
+    Fisher ratio        class separation
+    Mardia's kurtosis   distributional shape
 
-Every metric that geometry_metric_audit.md §5 rejects (trace, log-determinant,
-participation ratio, effective rank, covariance anisotropy, spectral entropy,
-unratioed within/between scatter, silhouette, Davies-Bouldin, Henze-Zirkler,
-Mardia's skewness) is deliberately NOT implemented here. Do not add any of
-them without first updating the audit's rejection rationale.
+The audit rejects a longer list of candidates (trace, log-determinant,
+participation ratio, effective rank, anisotropy, spectral entropy, unratioed
+scatter, silhouette, Davies-Bouldin, Henze-Zirkler, Mardia's skewness); none
+of them is implemented here. Adding one means updating the audit first.
 
-Reuse, not reimplementation: all three metrics are computed from the single
-`(class_means, precision)` pair produced by CSG-SKin's own
-`src.utils.ood_metrics.compute_mahalanobis_params_from_arrays` — the exact
-regularized precision matrix the Mahalanobis reliability estimator itself
-uses, imported rather than re-derived, per paper-3/CLAUDE.md's reuse rule.
+All three read the same (class_means, precision) pair that CSG-SKin's
+src.utils.ood_metrics.compute_mahalanobis_params_from_arrays produces, so
+the geometry described is the geometry the Mahalanobis estimator actually
+sees rather than a separately derived approximation.
 
-This module contains no experiment-execution code: no checkpoint loading, no
-dataset loading, no results/ writing. It is a pure-numpy diagnostics library
-over already-extracted (features, labels) arrays, to be wired into an E1
-experiment script later. CSG-SKin itself is never modified — this module
-only imports from it.
+A pure-numpy library over already-extracted (features, labels) arrays: no
+checkpoint loading, no dataset loading, nothing written to results/.
 """
 
 from __future__ import annotations
@@ -94,14 +88,10 @@ class GeometryDiagnostics(NamedTuple):
 
 def condition_number(precision: np.ndarray) -> float:
     """
-    kappa(Sigma) = lambda_max(Sigma) / lambda_min(Sigma).
-
-    Computed directly from the precision matrix (Sigma^-1), not by inverting
-    back to Sigma: condition number is invariant under matrix inversion
-    (kappa(Sigma) == kappa(Sigma^-1)), since inversion just reciprocates every
-    eigenvalue, which flips which one is "max" and which is "min" without
-    changing their ratio. This avoids a second, separately-conditioned
-    inversion of an already-inverted, already-regularized matrix.
+    kappa(Sigma) = lambda_max / lambda_min, read off the precision matrix
+    rather than inverting back to Sigma. Inversion reciprocates every eigenvalue,
+    swapping which is max and which is min without changing their ratio, so
+    kappa(Sigma) == kappa(Sigma^-1) and a second inversion is avoided.
     """
     precision = np.asarray(precision, dtype=np.float64)
     eigvals = np.linalg.eigvalsh(precision)
@@ -132,17 +122,14 @@ def fisher_ratio(
     labels: np.ndarray,
 ) -> float:
     """
-    J = tr(Sigma^-1 @ S_B), the multivariate Fisher/LDA discriminability
-    criterion, using the between-class scatter matrix S_B and the SAME
-    regularized precision matrix (Sigma^-1) the Mahalanobis estimator
-    already fit — not a separately-estimated within-class scatter inverse —
-    so this is read off the exact object the reliability estimator inverts,
-    per geometry_metric_audit.md §5's "one estimation call, three read-outs"
-    design.
+    J = tr(Sigma^-1 @ S_B), the multivariate Fisher/LDA criterion, using the
+    between-class scatter and the same regularized precision the Mahalanobis
+    estimator already fit -- one estimation call, three read-outs
+    (docs/geometry_metric_audit.md 5).
 
-    Entangled with condition_number by construction (both are functions of
-    the same `precision`) — see fisher_ratio_defense.md §3. Report alongside
-    fisher_ratio_scalar, not instead of it.
+    Both this and condition_number are functions of that same precision matrix,
+    so they share estimation noise by construction. Report it alongside
+    fisher_ratio_scalar, never instead of it (docs/fisher_ratio_defense.md 3).
     """
     precision = np.asarray(precision, dtype=np.float64)
     s_between = _between_class_scatter(class_means, labels)
@@ -155,15 +142,11 @@ def fisher_ratio_scalar(
     labels: np.ndarray,
 ) -> float:
     """
-    Decoupled companion to fisher_ratio, made mandatory (not optional) by
-    fisher_ratio_defense.md §5: tr(S_B)/tr(S_W), computed WITHOUT the
-    precision matrix at all, so it cannot share condition_number's
-    estimation-noise entanglement with fisher_ratio the way that metric
-    does. tr(S_W) is computed directly as sum_i ||x_i - mu_{y_i}||^2 — no
-    matrix inverse, no reg_eps dependence. Coarser (isotropic, ignores which
-    directions carry more class-discriminating information) in exchange for
-    that independence — the trade-off fisher_ratio_defense.md §3 describes
-    as irreducible, not a bug to fix.
+    tr(S_B)/tr(S_W), the decoupled companion to fisher_ratio: no precision
+    matrix, no matrix inverse, no reg_eps dependence, so it cannot inherit
+    condition_number's estimation noise. tr(S_W) is summed directly as
+    sum_i ||x_i - mu_{y_i}||^2. Isotropic, so it ignores which directions carry
+    class-discriminating information -- the price of that independence.
     """
     features = np.asarray(features, dtype=np.float64)
     class_means = np.asarray(class_means, dtype=np.float64)
@@ -180,22 +163,14 @@ def fisher_ratio_scalar(
 
 def _squared_mahalanobis_distances(centered: np.ndarray, precision: np.ndarray) -> np.ndarray:
     """
-    Row-wise (x_i - mu)^T @ Sigma^-1 @ (x_i - mu) for every row i.
+    Row-wise (x_i - mu)^T Sigma^-1 (x_i - mu).
 
-    Deliberately NOT np.einsum("ij,jk,ik->i", ...): without optimize=True
-    (not the default), einsum evaluates a 3-operand contraction via a
-    generic, single-threaded C loop rather than routing the implicit
-    (n,d)@(d,d) product through BLAS. Profiling (both py-spy on the GPU
-    server and cProfile locally) confirmed this einsum call as the dominant
-    cost of mardia_kurtosis's bootstrap calibration -- ~52% of total runtime
-    at N=8000/d=16/n_bootstrap=200 in a local repro, consistent with it
-    being the near-entire cost at real ISIC-scale N on the server. This
-    formulation is mathematically identical (same sum of products) but
-    routes the (n,d)@(d,d) step through BLAS gemm, which is multi-threaded
-    and cache-blocked where einsum's default path is neither. Results are
-    numerically equivalent up to ordinary floating-point summation-order
-    rounding (~1e-12 relative) -- not bit-identical to the old einsum path,
-    but not distinguishable from it at any precision that matters here.
+    Not np.einsum("ij,jk,ik->i", ...): without optimize=True, einsum runs a
+    generic single-threaded C loop instead of routing the (n,d)@(d,d) product
+    through BLAS. Profiling put that call at roughly half the runtime of
+    mardia_kurtosis's bootstrap calibration. This form is mathematically
+    identical and hits BLAS gemm; results agree to ~1e-12 relative, differing
+    only in summation order.
     """
     return np.sum((centered @ precision) * centered, axis=1)
 
@@ -209,17 +184,15 @@ def _simulate_mardia_null(
     rng: np.random.Generator,
 ) -> np.ndarray:
     """
-    Parametric-bootstrap null for b2,d under this exact estimator (K
-    per-class means, pooled covariance with reg_eps, N-K denominator).
+    Parametric-bootstrap null for b2,d under this exact estimator: K per-class
+    means, pooled covariance with reg_eps, N-K denominator.
 
-    Treats the fitted (class_means, Sigma=precision^-1) as the true
-    generating model, draws fresh per-class-sized synthetic samples from it,
-    REFITS compute_mahalanobis_params_from_arrays on each synthetic draw
-    (not just scoring against the original fit), and computes b2,d in-sample
-    on that refit -- reproducing the exact fit-then-score coupling that
-    produces the real statistic's finite-sample bias, rather than assuming a
-    closed-form asymptotic formula that does not apply to this estimator
-    (see module docstring / mardia_kurtosis below for why not).
+    Treats the fitted (class_means, Sigma) as the generating model, draws fresh
+    per-class-sized synthetic samples, refits
+    compute_mahalanobis_params_from_arrays on each draw rather than scoring
+    against the original fit, and computes b2,d in-sample on the refit. That
+    reproduces the fit-then-score coupling responsible for the statistic's
+    finite-sample bias.
     """
     sigma = np.linalg.inv(precision)
     num_classes, feat_dim = class_means.shape
@@ -270,48 +243,30 @@ def mardia_kurtosis(
     timings: list[tuple[str, float]] | None = None,
 ) -> tuple[float, float]:
     """
-    Mardia's (1970) multivariate kurtosis statistic, adapted from its
-    classical single-Gaussian form to the shared-covariance,
-    per-class-conditional-mean model CSG-SKin's Mahalanobis estimator
-    actually assumes (Lee et al., 2018): residuals are taken relative to
-    each sample's OWN class mean, not one global mean, then measured against
-    the shared precision matrix both repos' Mahalanobis distance itself uses.
+    Mardia's (1970) multivariate kurtosis, adapted from its single-Gaussian form
+    to the shared-covariance, per-class-mean model the Mahalanobis estimator
+    assumes: residuals are taken against each sample's own class mean and
+    measured through the shared precision matrix.
 
-        b2,d = (1/n) * sum_i [ (x_i - mu_{y_i})^T Sigma^-1 (x_i - mu_{y_i}) ]^2
+        b2,d = (1/n) sum_i [ (x_i - mu_{y_i})^T Sigma^-1 (x_i - mu_{y_i}) ]^2
 
-    which is exactly the empirical fourth moment of the per-sample squared
-    Mahalanobis distances the reliability estimator computes (not merely
-    correlated with them) — see geometry_metric_audit.md §5.
+    which is the empirical fourth moment of the squared Mahalanobis distances
+    the estimator itself computes.
 
-    THE STATISTIC IS b2,d; THE NULL IS NOT MARDIA'S CLOSED-FORM ASYMPTOTIC
-    FORMULA. Mardia's (1970) mean d(d+2) / variance 8*d*(d+2)/n is derived
-    for a SINGLE global mean estimated from all n samples. This function
-    instead centers each sample on its OWN class mean (K means, each fit
-    from ~n/K samples) and inverts a covariance fit with an N-K denominator
-    -- a structurally different estimator. Verified empirically (parametric
-    bootstrap vs. exactly-Gaussian synthetic data, n_classes=8, feat_dim=16):
-    the closed-form formula gives a ~72% false-rejection rate at nominal 5%
-    significance on data that is Gaussian by construction, because the true
-    finite-sample mean of b2,d under this estimator is measurably below
-    d(d+2), tracking a per-class (n_c-1)/(n_c+1) correction rather than the
-    classical single-mean formula. Do not reintroduce the closed-form
-    z-score; it is not a conservative approximation here, it is wrong.
+    The classical closed-form null does not apply here. Mardia's mean d(d+2) and
+    variance 8d(d+2)/n assume one global mean estimated from all n samples; this
+    centres on K class means and inverts a covariance fit with an N-K
+    denominator. On synthetic data that is Gaussian by construction
+    (n_classes=8, feat_dim=16) the closed form rejects at ~72% against a nominal
+    5%, because the finite-sample mean of b2,d under this estimator sits below
+    d(d+2) and tracks a per-class (n_c-1)/(n_c+1) correction. It is wrong here,
+    not merely approximate.
 
-    The null used below is instead calibrated by parametric bootstrap: treat
-    the fitted (class_means, Sigma) as the true model, simulate synthetic
-    data at the same per-class sample sizes, refit and rescore exactly as
-    the real pipeline does, and z-score the observed b2,d against the
-    resulting empirical null mean/std. This still tests the same statistic
-    approved in geometry_metric_audit.md §5 — only its significance
-    calibration changed.
+    The null is therefore calibrated by parametric bootstrap (see
+    _simulate_mardia_null) and the observed b2,d is z-scored against it. Same
+    statistic, different calibration.
 
-    debug/timings: temporary profiling instrumentation (GPU-server
-    performance investigation). debug=True prints this function's two
-    stages ("Mardia statistic" = the cheap observed b2,d; "bootstrap
-    calibration" = the expensive parametric-bootstrap null) as they
-    complete. timings, if given a list, appends (label, seconds) for both
-    stages so a caller (compute_geometry_diagnostics) can fold them into one
-    combined summary bar. Both inert by default -- no behavior change.
+    debug and timings are profiling instrumentation, inert by default.
     """
     features = np.asarray(features, dtype=np.float64)
     class_means = np.asarray(class_means, dtype=np.float64)
@@ -349,22 +304,13 @@ def compute_geometry_diagnostics(
     debug: bool = False,
 ) -> GeometryDiagnostics:
     """
-    Single entry point: fits CSG-SKin's own Mahalanobis parameters (imported,
-    not reimplemented) on (features, labels), then computes exactly the
-    approved metric set from that one fit: condition_number, fisher_ratio
-    (Hotelling-Lawley, entangled with condition_number by construction),
-    fisher_ratio_scalar (decoupled companion, mandatory per
-    fisher_ratio_defense.md §5), and mardia_kurtosis (bootstrap-calibrated).
+    Single entry point. Fits CSG-SKin's Mahalanobis parameters on
+    (features, labels), then reads the approved metric set off that one fit:
+    condition_number, fisher_ratio, fisher_ratio_scalar and mardia_kurtosis.
 
-    debug: temporary profiling instrumentation only (GPU-server performance
-    investigation, per-metric timing requested alongside the Mardia
-    bootstrap speedup work). When True, prints elapsed wall-clock time for
-    each of covariance fitting / condition number / Fisher ratio / Mardia
-    statistic / bootstrap calibration as they complete, then a final ASCII
-    bar-chart summary. False by default -- zero output, negligible overhead
-    (a handful of time.perf_counter() calls) when not enabled. Safe to
-    remove this parameter and every _log_stage_time/_render_timing_bar call
-    once per-stage timing is no longer needed.
+    debug prints per-stage wall-clock timings and a summary bar; it is off by
+    default and can be removed along with the _log_stage_time and
+    _render_timing_bar calls once no longer needed.
     """
     timings: list[tuple[str, float]] = []
 

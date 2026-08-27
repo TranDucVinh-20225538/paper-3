@@ -1,0 +1,20 @@
+% table_geometry_summary.tex -- from results/table1_e1_summary.csv
+% \input from sections/results.tex, Section~\ref{sec:results-geometry}.
+\begin{table}[htbp]
+\centering
+\caption{Representation geometry across the disentanglement ladder (mean $\pm$ SD).}
+\label{tab:geometry-summary}
+\begin{tabular}{lccc}
+\toprule
+Metric & \texttt{runA\_grl} ($\lambda_{orth}=0$) & \texttt{runB\_orth1} ($\lambda_{orth}=1$) & \texttt{runB} ($\lambda_{orth}=5$) \\
+\midrule
+Condition number                          & $75.5 \pm 7.8$              & $559.8 \pm 125.9$           & $5329.9 \pm 2672.2$ \\
+Fisher ratio (Hotelling--Lawley, $\times10^{5}$) & $5.41 \pm 0.81$      & $5.71 \pm 0.43$              & $5.63 \pm 0.50$ \\
+Fisher ratio (decoupled scalar)           & $4.69 \pm 0.65$              & $4.94 \pm 0.37$              & $4.95 \pm 0.38$ \\
+Mardia's kurtosis ($b$)                   & $739.9 \pm 86.5$             & $788.0 \pm 240.9$            & $679.9 \pm 63.7$ \\
+Mardia's kurtosis ($z$)                   & $341.1 \pm 99.3$             & $397.3 \pm 257.6$            & $270.7 \pm 53.4$ \\
+\midrule
+$n$ seeds                                 & 5                            & 5                            & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}

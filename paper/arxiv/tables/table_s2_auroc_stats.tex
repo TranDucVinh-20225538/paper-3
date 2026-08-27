@@ -1,0 +1,24 @@
+% table_s2_auroc_stats.tex -- from results/e2_kendall_tau.csv and
+% results/e2_jonckheere_terpstra_auroc.csv. Full 5-metric statistics for
+% geometry vs. Mahalanobis AUROC (main text Figure~\ref{fig:geometry-vs-auroc}
+% shows only the condition-number panel).
+\begin{table}[htbp]
+\centering
+\caption{Geometry vs.\ Mahalanobis AUROC: full statistics for all five metrics ($n=13$, exact-permutation Kendall's $\tau$; Monte Carlo cross-check at $10^5$ draws in parentheses).}
+\label{tab:s2-auroc-stats}
+\small
+\begin{tabular}{lcc}
+\toprule
+Metric & $\tau$ & $p$ (exact / MC) \\
+\midrule
+Condition number       & $-0.128$ & $0.590$ / $0.589$ \\
+Fisher ratio (HL)      & $-0.282$ & $0.204$ / $0.202$ \\
+Fisher ratio (scalar)  & $-0.154$ & $0.510$ / $0.509$ \\
+Mardia's kurtosis ($b$) & $-0.128$ & $0.590$ / $0.590$ \\
+Mardia's kurtosis ($z$) & $-0.128$ & $0.590$ / $0.592$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+\small AUROC itself vs.\ rung order (Jonckheere--Terpstra): $J=25.0$ (null mean $27.5$), $p_{\mathrm{exact}}=0.650$.
+\end{table}

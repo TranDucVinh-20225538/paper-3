@@ -1,0 +1,102 @@
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Overall study design}
+\label{sec:study-design}
+
+For each of 13 checkpoints (Section~\ref{sec:ladder}), we extract $z_{lesion}$ embeddings for the ISIC training set and for the ISIC-test/PAD-UFES evaluation split. From these embeddings we compute three geometry metrics on the fitted Mahalanobis parameters (Section~\ref{sec:geometry-metrics}), score the evaluation split with eight reliability estimators built on the identical embeddings---five distance-based, three not (Section~\ref{sec:scorers})---and train three supervised probes on the same embeddings to quantify domain-information decodability independent of any of these scorers (Section~\ref{sec:probe}). Association between disentanglement strength, geometry, reliability estimation, and decodability is then tested across the ladder using exact-permutation statistics (Section~\ref{sec:stats}). Figure~\ref{fig:schematic} summarizes this pipeline.
+
+\input{figures/figure_schematic}
+
+\subsection{Datasets and domains}
+\label{sec:datasets}
+
+We use two publicly available skin lesion datasets: ISIC 2018 \citep{codella2019skin,tschandl2018ham10000} as the source domain and PAD-UFES-20 \citep{pacheco2020padufes} as the target domain, following the split and preprocessing pipeline of the underlying disentanglement classifier this study audits. ISIC data is partitioned into training, validation, and test subsets under a fixed, seeded split. PAD-UFES is withheld from label supervision during training. PAD-UFES serves as the adversarial target domain during training and therefore is not independent of the optimization process: the domain-adversarial branch of the audited architecture explicitly optimizes the representation to reduce discriminability between ISIC and PAD-UFES.
+
+\subsection{The disentanglement dose-response ladder}
+\label{sec:ladder}
+
+We use three checkpoint families from a domain-adversarial disentanglement architecture, each producing a 16-dimensional lesion representation ($z_{lesion}$). The three families share identical architecture, training recipe, and representation dimensionality, differing only in the strength of an orthogonality regularization penalty ($\lambda_{orth}$) applied between the lesion and context branches (Table~\ref{tab:ladder-design}).
+
+\begin{table}[htbp]
+\centering
+\caption{The disentanglement dose-response ladder.}
+\label{tab:ladder-design}
+\begin{tabular}{lccc}
+\toprule
+Family & $\lambda_{orth}$ & Mechanism & Seeds available \\
+\midrule
+\texttt{runA\_grl}   & 0 & domain-adversarial component only & 42, 52, 62, 72, 82 (5) \\
+\texttt{runB\_orth1} & 1 & + orthogonality term               & 42, 52, 62, 72, 82 (5) \\
+\texttt{runB}        & 5 & + stronger orthogonality           & 42, 52, 62 (3) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+13 (family, seed) checkpoints total. All checkpoints are referenced by explicit, individually verified file path; none is resolved by automated directory search, to avoid a documented failure mode in which the most-recently-modified file in a run directory is not the best-performing validation epoch.
+
+We additionally report a single conventional (non-disentangled) ResNet-50 checkpoint, \texttt{baseline\_soft}, differing from the ladder in architecture, representation dimensionality (2048-d vs.\ 16-d), and training recipe, as a descriptive reference rather than a fourth dose level.
+
+\subsection{Representation geometry metrics}
+\label{sec:geometry-metrics}
+
+The selected metrics were pre-specified to represent three complementary aspects of representation geometry---covariance conditioning, class separation, and multivariate normality---rather than to maximize empirical correlation with downstream performance.
+
+\begin{itemize}
+\item \textbf{Condition number}: the ratio of the largest to smallest eigenvalue of the regularized, shared within-class covariance matrix used to fit the Mahalanobis estimator (Section~\ref{sec:scorers}), measuring how numerically stable that covariance's inversion is.
+\item \textbf{Fisher ratio}: the Hotelling--Lawley trace, $\mathrm{tr}(\Sigma^{-1}S_B)$, computed from the same fitted precision matrix, measuring class separation relative to within-class spread. We additionally report a decoupled scalar companion, $\mathrm{tr}(S_B)/\mathrm{tr}(S_W)$, which involves no matrix inverse and is therefore not entangled with condition number's own estimation noise---the two are reported together because they are not statistically independent measurements when both derive from the same $\Sigma^{-1}$.
+\item \textbf{Mardia's multivariate kurtosis}: quantifies departure from the class-conditional Gaussian shape the Mahalanobis estimator assumes. The classical closed-form asymptotic null does not apply once class means and covariance are estimated in-sample from the same residuals being tested; its null distribution is calibrated by parametric bootstrap (200 resamples per checkpoint) rather than the textbook formula.
+\end{itemize}
+
+All three metrics are computed on the identical fitted Mahalanobis parameters used for scoring (Section~\ref{sec:scorers}), not from an independently re-estimated covariance, so that geometry and reliability estimation describe the same fitted object.
+
+\subsection{Reliability scorers}
+\label{sec:scorers}
+
+Each test embedding is scored by eight structurally distinct rules, applied to identical embeddings and an identical ISIC-train / ISIC-test / PAD-UFES split, for every one of the 13 primary-ladder checkpoints. Five operate only on embedding geometry:
+
+\begin{itemize}
+\item \textbf{Mahalanobis distance}: the minimum, over the 8 ISIC classes, of the squared Mahalanobis distance from the test embedding to each class mean, under a shared covariance fit on the ISIC training set with regularization $\varepsilon=10^{-5}$.
+\item \textbf{Cosine-to-centroid}: the minimum, over the same 8 class means, of $1-\cos(z,\mu_c)$---identical class-centroid structure to the Mahalanobis scorer, with the covariance/precision step removed, isolating that one variable.
+\item \textbf{Pooled $k$-nearest-neighbor distance}: the Euclidean distance from a test embedding to its $k$-th nearest neighbor in the full, class-pooled ISIC training set---no class structure, no covariance, the most assumption-free of the five distance-based scorers \citep{sun2022out}. $k=10$ was specified as the primary/headline value in the analysis plan before any $k$-NN result was computed; $k=1$ and $k=50$ are reported as a prespecified robustness grid, not selected after the fact.
+\end{itemize}
+
+Three additional scorers, not distance-based, were evaluated to test whether the failure documented here is specific to distance-based scoring:
+
+\begin{itemize}
+\item \textbf{Energy} \citep{liu2020energy}: $-\log\sum_k\exp(\text{logit}_k)$, computed from the classifier head's logits rather than from embedding geometry; a lower log-sum-exp (higher score, in our OOD-is-higher convention) indicates lower classifier confidence.
+\item \textbf{ViM (Virtual-Logit Matching)} \citep{wang2022vim}: combines a residual-subspace term---the embedding's norm outside the top principal subspace spanned by the classifier head's weight matrix---with the same logits Energy uses, calibrated on the training set so the two terms are on a comparable scale.
+\item \textbf{Density (per-class KDE)}: a Gaussian-kernel density estimate fit separately on each of the 8 ISIC classes' training embeddings (bandwidth by Scott's rule), scored by the negative log-likelihood under the best-fitting class model---replacing Mahalanobis's single-Gaussian assumption with a non-parametric one, while keeping the same per-class-then-best structure.
+\end{itemize}
+
+Logits for Energy and ViM were reconstructed from each checkpoint's own classifier head (a linear layer applied directly to the cached $z_{lesion}$ embedding, without a fresh forward pass through the network) and verified to reproduce that checkpoint's own classification accuracy before use. All eight scorers share one score convention (higher score, more out-of-distribution) and are evaluated by AUROC and FPR-at-95\%-TPR on the same ISIC-test-vs-PAD-UFES split. The three non-distance-based scorers were evaluated on the 13 primary-ladder checkpoints only; \texttt{baseline\_soft} (Section~\ref{sec:ladder}) uses a different architecture and classifier head and was not included in this extension.
+
+\subsection{Domain-information probe}
+\label{sec:probe}
+
+To test whether domain-discriminative information is present in an embedding independent of whether any of the eight scorers above can access it, we train three supervised classifiers---logistic regression, a linear support vector machine, and a random forest, each at library-default hyperparameters with no tuning---to predict domain membership (ISIC-test vs.\ PAD-UFES) directly from the same $z_{lesion}$ embeddings scored in Section~\ref{sec:scorers}. None of the three probes has access to the original training objective; each is a fresh classifier fit only for this analysis. Probe AUROC is reported as evidence of what is linearly and nonlinearly recoverable from the representation, not as a claim about the training objective's internal computation \citep{hewitt2019designing}.
+
+We report 5-fold stratified cross-validated AUROC on out-of-fold predictions, avoiding the same-data-fit-and-evaluate leakage that would otherwise inflate apparent decodability at this sample size and dimensionality. The ISIC-test/PAD-UFES split is class-imbalanced (approximately 2.2:1); AUROC was selected as the primary probe metric specifically because it is threshold-independent and substantially less sensitive to this imbalance than accuracy-based metrics would be, though it was not supplemented here with an imbalance-corrected metric such as balanced accuracy or precision-recall AUC.
+
+\subsection{Statistical testing}
+\label{sec:stats}
+
+The disentanglement ladder has only three ordinal levels with unequal per-level seed counts (5, 5, 3). We test association using Kendall's $\tau$ and, for ordered-group trend testing, the Jonckheere--Terpstra statistic, both evaluated against a full-enumeration exact permutation null---every distinct label arrangement consistent with the true per-rung seed counts---rather than the standard asymptotic approximation, which is not assumed valid at this sample size without checking.
+
+Given the limited number of independent checkpoints ($n=13$), we emphasize consistency across independent analyses rather than statistical significance from any single test; unadjusted exact $p$-values are reported without family-wise correction. The analysis plan fixed before any experiment ran specifies a single success criterion for a trend to count as supporting the mechanistic hypothesis: $|\tau|\geq0.3$ \emph{and} significance at $\alpha=0.05$, with the sign stable between the full ladder and the common-seed subset. We state its detectability consequences in Section~\ref{sec:power}.
+
+Kendall's $\tau$ $p$-values are two-sided throughout. Jonckheere--Terpstra $p$-values are one-sided upper-tail, the conventional reading of an ordered-alternative trend test; at these group sizes the two-sided Jonckheere--Terpstra $p$-value is identical to the Kendall's $\tau$ $p$-value, because with a tie-free response the two statistics are related by the exact identity $\tau_b=(2J-M)/\sqrt{M n_0}$, where $M$ is the number of cross-rung pairs and $n_0$ the total number of pairs. The two tests are therefore not independent evidence of the same trend.
+
+\subsection{Detectability, power, and interval estimates}
+\label{sec:power}
+
+A $p$-value above $\alpha$ states only that the observed statistic was not extreme under the null; it does not say which effect sizes the design could have detected, nor which the data exclude. We therefore report three additional quantities for every association tested, so that each null result carries an explicit bound rather than a qualitative hedge.
+
+First, for each design we compute $\tau_{\mathrm{crit}}$, the smallest $|\tau|$ attainable at that design whose two-sided exact permutation $p$-value reaches $0.05$. This is a property of $n$, the group sizes, and the tie structure alone: no data, however clean, can yield a significant association below it. Second, we compute power by simulation ($2\times10^{4}$ datasets per point, common random numbers across the effect-size grid) under alternatives parameterized so that the \emph{expected value of the reported statistic} equals the target $\tau$---a bivariate-normal alternative with $\mathbb{E}[\tau]=(2/\pi)\arcsin\rho$ for the continuous--continuous design, and a linear dose-shift alternative $y_i=\theta d_i+\varepsilon_i$, $\varepsilon_i\sim\mathcal{N}(0,1)$, with $\mathbb{E}[\tau_b]$ available in closed form, for the ordered-ladder design. Third, we report a 95\% bias-corrected and accelerated (BCa) bootstrap interval on each observed $\tau$, using $2\times10^{4}$ resamples drawn \emph{within} rung so that the 5/5/3 design is held fixed --- $\lambda_{orth}$ is a fixed design factor, not a sampled one. Where an observed $\tau$ attains the maximum value its design permits, the resampling distribution is one-sided by construction and no bootstrap interval is valid; such cases are reported as such rather than given an interval.
+
+Full results are in Supplementary Sections~S8 (design-level critical values, power curves) and~S9 (per-test bootstrap intervals).
+
+\subsection{Reproducibility}
+\label{sec:reproducibility}
+
+Every checkpoint, seed, and preprocessing parameter used in this study is recorded by explicit value or file path; no result in this paper depends on a directory-resolved or otherwise ambiguously-selected checkpoint. Analysis code and derived results supporting this study are available as described in the Data Availability statement accompanying this submission.

@@ -1,0 +1,26 @@
+% table_s8_power.tex -- from results/power_design_summary.csv
+% (analysis/analyze_power_and_ci.py). Design-level detectability: what each
+% of this study's two permutation designs could have found, independent of
+% the data actually observed.
+\begin{table}[htbp]
+\centering
+\caption{Detectability of the two permutation designs used in this study. $\tau_{\mathrm{crit}}$ is the smallest $|\tau|$ attainable at that design whose two-sided exact permutation $p$-value reaches $0.05$: no dataset, however clean, can produce a significant association below it. Power is computed by simulation ($2\times10^{4}$ datasets per point, common random numbers) under an alternative whose expected value of the reported statistic equals the stated $\tau$ --- a bivariate-normal alternative for Design~A, a linear dose-shift alternative $y=\theta d+\varepsilon$ for Design~B. MDE$_{80\%}$ is the expected $\tau$ at which power first reaches $0.80$.}
+\label{tab:s8-power}
+\small
+\begin{tabular}{lccccccc}
+\toprule
+& & Permutation & Max.\ attainable & & \multicolumn{2}{c}{Power} & \\
+\cmidrule(lr){6-7}
+Design & $n$ & null space & $|\tau|$ & $\tau_{\mathrm{crit}}$ & $\tau=0.3$ & $\tau=0.5$ & MDE$_{80\%}$ \\
+\midrule
+A: continuous--continuous            & 13 & $13!$ orderings & 1.000 & 0.436 & 0.27 & 0.71 & 0.54 \\
+\quad (E2: geometry vs.\ AUROC)      &    &                 &       &       &      &      &      \\
+B: 5/5/3 ordered ladder              & 13 & 72,072          & 0.840 & 0.473 & 0.23 & 0.63 & 0.57 \\
+\quad (E1, E2.6, E2.7 vs.\ $\lambda_{orth}$) &  &            &       &       &      &      &      \\
+B: 3/3/3 common-seed subset          &  9 & 1,680           & 0.866 & 0.609 & 0.14 & 0.39 & 0.69 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.25cm}
+\small The success criterion this study pre-specified (Section~\ref{sec:stats}, $|\tau|\geq0.3$ \emph{and} significant at $\alpha=0.05$) lies below $\tau_{\mathrm{crit}}$ for all three designs, and is therefore unsatisfiable at these sample sizes: an association of exactly the pre-specified magnitude could not have been declared significant regardless of the data. Only the condition-number effect ($\tau=0.840$, the maximum attainable value at this design) clears $\tau_{\mathrm{crit}}$.
+\end{table}

@@ -1,0 +1,31 @@
+% cover_letter.tex -- BSPC submission cover letter. Standalone, compilable
+% (plain letter-style document, not elsarticle).
+
+\documentclass{letter}
+\usepackage[margin=2.5cm]{geometry}
+
+\signature{Duc-Vinh Tran}
+\address{School of Information and Communication Technology, Hanoi University of Science and Technology\\1 Dai Co Viet Road, Hai Ba Trung, Hanoi 100000, Vietnam\\vinh.td225538@sis.hust.edu.vn}
+
+\begin{document}
+
+\begin{letter}{Editor-in-Chief\\Biomedical Signal Processing and Control\\Elsevier}
+
+\opening{Dear Editor,}
+
+We are pleased to submit our manuscript, ``Decodable but Not Accessible: Auditing Distance-Based Reliability Estimation on Disentangled Skin-Lesion Representations,'' for consideration for publication in \textit{Biomedical Signal Processing and Control}.
+
+Distance-based reliability and out-of-distribution (OOD) estimation methods---Mahalanobis distance and its relatives---are widely used to flag when a clinical imaging model's prediction should be trusted, on the implicit assumption that a representation's geometry reflects how typical, and therefore how reliable, a given input is. This assumption is rarely tested under training interventions that deliberately reshape representation geometry, such as the domain-adversarial disentanglement training increasingly used to reduce shortcut reliance in clinical classifiers. Our manuscript audits this assumption directly, using a disentanglement dose-response ladder in skin-lesion classification (three checkpoint families sharing one architecture and representation, varying only orthogonality regularization strength).
+
+We find that representation geometry changes substantially with training (condition number shifts by two orders of magnitude), yet this change is not accompanied by any improvement in Mahalanobis-distance reliability estimation, which remains flat and below chance throughout. Critically, this failure is shared identically by two additional, structurally distinct distance-based scorers (cosine-to-centroid similarity and pooled $k$-nearest-neighbor distance), ruling out the specific scoring rule as the cause. A supervised probe with no access to the training objective nonetheless recovers the relevant domain information from the same embeddings well above chance. Together, these results demonstrate that information can remain decodable in a representation while becoming inaccessible to an entire family of distance-based reliability estimators---a distinction we believe is broadly relevant to any pipeline that pairs representation-reshaping training with distance-based reliability estimation, not only in dermatology imaging.
+
+We believe this work is well suited to \textit{Biomedical Signal Processing and Control}'s scope at the intersection of signal/image processing methodology and clinically grounded evaluation, and that its audit-based framing---identifying and characterizing a previously undocumented failure mode rather than proposing a new estimator---will be of interest to the journal's readership working on reliability and uncertainty estimation in biomedical machine learning.
+
+This manuscript is original, has not been published previously, and is not under consideration for publication elsewhere, in whole or in part. All authors have approved the manuscript and its submission to \textit{Biomedical Signal Processing and Control}. All datasets used (ISIC 2018, PAD-UFES-20) are publicly available. We have no conflicts of interest to declare.
+
+Thank you for your consideration. We look forward to your response.
+
+\closing{Sincerely,}
+
+\end{letter}
+\end{document}

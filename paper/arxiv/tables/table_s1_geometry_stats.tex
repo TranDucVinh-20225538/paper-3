@@ -1,0 +1,21 @@
+% table_s1_geometry_stats.tex -- from results/e1_kendall_tau.csv and
+% results/e1_jonckheere_terpstra.csv. Full 5-metric statistics for geometry
+% vs. rung order (main text Table~\ref{tab:geometry-summary} reports only
+% condition number's headline statistic).
+\begin{table}[htbp]
+\centering
+\caption{Geometry vs.\ rung order: full statistics for all five metrics (exact-permutation tests, Section~\ref{sec:stats}).}
+\label{tab:s1-geometry-stats}
+\small
+\begin{tabular}{lcccccc}
+\toprule
+Metric & $\tau$ (full, $n=13$) & $p$ (exact) & $\tau$ (common-seed, $n=9$) & $p$ (exact) & $J$ & $p_{JT}$ (exact) \\
+\midrule
+Condition number             & $0.840$  & $2.8\times10^{-5}$ & $0.866$  & $0.0012$ & $55.0$ & $1.4\times10^{-5}$ \\
+Fisher ratio (HL)            & $0.168$  & $0.521$            & $-0.096$ & $0.831$  & $33.0$ & $0.261$ \\
+Fisher ratio (scalar)        & $0.076$  & $0.798$            & $-0.289$ & $0.388$  & $30.0$ & $0.399$ \\
+Mardia's kurtosis ($b$)      & $-0.137$ & $0.608$            & $-0.160$ & $0.668$  & $23.0$ & $0.739$ \\
+Mardia's kurtosis ($z$)      & $-0.168$ & $0.521$            & $-0.160$ & $0.668$  & $22.0$ & $0.780$ \\
+\bottomrule
+\end{tabular}
+\end{table}

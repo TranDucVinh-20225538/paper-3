@@ -1,0 +1,16 @@
+% table_mahalanobis_auroc.tex -- from results/table2_e2_summary.csv
+% \input from sections/results.tex, Section~\ref{sec:results-geometry-auroc}.
+\begin{table}[htbp]
+\centering
+\caption{Mahalanobis-distance AUROC (ISIC-test vs.\ PAD-UFES), by rung (mean $\pm$ SD across seeds).}
+\label{tab:mahalanobis-auroc}
+\begin{tabular}{lcccc}
+\toprule
+Rung & $\lambda_{orth}$ & $n$ seeds & AUROC & FPR@95\%TPR \\
+\midrule
+\texttt{runA\_grl}   & 0 & 5 & $0.401 \pm 0.028$ & $0.985 \pm 0.009$ \\
+\texttt{runB\_orth1} & 1 & 5 & $0.408 \pm 0.022$ & $0.980 \pm 0.012$ \\
+\texttt{runB}        & 5 & 3 & $0.393 \pm 0.025$ & $0.985 \pm 0.003$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,48 @@
+% table_s9_tau_ci.tex -- from results/kendall_tau_ci.csv
+% (analysis/analyze_power_and_ci.py). Every Kendall's tau reported in this
+% paper, with a 95% stratified-bootstrap BCa interval, so that each null
+% result states which effect sizes it does and does not exclude rather than
+% only that p > 0.05.
+\begin{table}[htbp]
+\centering
+\caption{Every reported Kendall's $\tau$ with a 95\% bootstrap confidence interval ($2\times10^{4}$ stratified resamples, BCa; resampling is within-rung so the 5/5/3 design is held fixed). ``Largest $|\tau|$ not excluded'' is the interval endpoint furthest from zero --- the effect size each null result still permits.}
+\label{tab:s9-tau-ci}
+\small
+\begin{tabular}{llccc}
+\toprule
+& Test & $\tau$ & 95\% CI & Largest $|\tau|$ not excluded \\
+\midrule
+\multirow{5}{*}{E1 vs.\ $\lambda_{orth}$}
+& Condition number        & $0.840$  & \multicolumn{2}{c}{at design ceiling --- see note} \\
+& Fisher ratio (HL)       & $0.168$  & $[-0.461,\ 0.620]$ & 0.62 \\
+& Fisher ratio (scalar)   & $0.076$  & $[-0.532,\ 0.532]$ & 0.53 \\
+& Mardia's kurtosis ($b$) & $-0.137$ & $[-0.400,\ 0.206]$ & 0.40 \\
+& Mardia's kurtosis ($z$) & $-0.168$ & $[-0.412,\ 0.174]$ & 0.41 \\
+\midrule
+\multirow{5}{*}{E2 vs.\ AUROC}
+& Condition number        & $-0.128$ & $[-0.507,\ 0.200]$ & 0.51 \\
+& Fisher ratio (HL)       & $-0.282$ & $[-0.750,\ 0.183]$ & 0.75 \\
+& Fisher ratio (scalar)   & $-0.154$ & $[-0.611,\ 0.324]$ & 0.61 \\
+& Mardia's kurtosis ($b$) & $-0.128$ & $[-0.500,\ 0.233]$ & 0.50 \\
+& Mardia's kurtosis ($z$) & $-0.128$ & $[-0.534,\ 0.216]$ & 0.53 \\
+\midrule
+\multirow{8}{*}{E2.6 scorers}
+& Mahalanobis             & $-0.076$ & $[-0.524,\ 0.432]$ & 0.52 \\
+& Cosine-to-centroid      & $0.321$  & $[-0.210,\ 0.688]$ & 0.69 \\
+& $k$-NN ($k=1$)          & $-0.046$ & $[-0.500,\ 0.556]$ & 0.56 \\
+& $k$-NN ($k=10$)         & $0.015$  & $[-0.564,\ 0.489]$ & 0.56 \\
+& $k$-NN ($k=50$)         & $0.076$  & $[-0.524,\ 0.545]$ & 0.55 \\
+& Energy                  & $0.443$  & $[\ \ 0.048,\ 0.747]$ & 0.75 \\
+& ViM                     & $0.076$  & $[-0.268,\ 0.270]$ & \textbf{0.27} \\
+& Density (KDE)           & $0.015$  & $[-0.560,\ 0.471]$ & 0.56 \\
+\midrule
+\multirow{3}{*}{E2.7 probes}
+& Logistic regression     & $0.260$  & $[-0.210,\ 0.656]$ & 0.66 \\
+& Linear SVM              & $0.260$  & $[-0.210,\ 0.656]$ & 0.66 \\
+& Random forest           & $-0.107$ & $[-0.560,\ 0.368]$ & 0.56 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.25cm}
+\small \emph{Note.} Condition number vs.\ $\lambda_{orth}$ attains $\tau=0.840$, the maximum value the 5/5/3 design permits (a perfectly monotone ladder). Every bootstrap resample is therefore at or below the observed value and the resampling distribution is one-sided by construction, so no bootstrap interval is valid there; the exact permutation $p$-value ($2.8\times10^{-5}$) is the meaningful inference for that effect. ViM (bold) is the only null result in this study whose interval excludes the pre-specified $|\tau|=0.3$; the other nineteen do not.
+\end{table}

@@ -1,45 +1,110 @@
-# Paper 3
+# Decodable but Directionally Misaligned
 
-## Purpose
+Code and derived results for *Decodable but Directionally Misaligned: Auditing
+Distance-Based OOD Ranking on Domain-Adversarial Skin-Lesion Representations*.
 
-Paper 3 is an independent research project. It is not a continuation, refactor, or extension of Paper 1 ([`CSG-SKin/`](../CSG-SKin)) or Paper 2 ([`DST-Skin/`](../DST-Skin)) — both are treated as **frozen historical artifacts**: their checkpoints, code, and results are read from, never modified.
+Duc-Vinh Tran, Quyet-Thang Huynh
+School of Information and Communication Technology, Hanoi University of Science
+and Technology.
 
-**Research question:**
+## What the study does
 
-> When do representation improvements translate into better reliability estimation?
+Distance-based OOD scoring assumes two separate things: that a representation
+separates source from shifted inputs, and that the induced ordering points the
+right way, so that a larger distance means more out-of-distribution. This audit
+holds architecture and datasets fixed and varies orthogonality-regularization
+strength (lambda_orth = 0, 1, 5) across 13 checkpoints, then asks what happens
+to each assumption.
 
-This is **not** a methods paper, **not** an OOD-detection paper, and **not** a Mahalanobis paper. Mahalanobis distance is used here only as *the current downstream reliability estimator* through which the research question is tested — the object of study is the relationship between representation quality and the validity of a reliability estimate built on top of it, not the estimator itself.
+Covariance conditioning changes by about two orders of magnitude across that
+ladder while the other four geometry summaries show no significant trend. Five
+distance-based scorers from three structurally distinct families stay near 0.40
+directed AUROC at every level; their orientation-free separability is only
+0.58-0.60, meaning the scores retain weak domain signal but rank PAD-UFES
+samples as *more* source-typical than ISIC-test samples. Supervised probes
+recover domain membership from the identical embeddings at 0.72-0.81 AUROC.
 
-See [`SPEC.md`](SPEC.md) for the mechanistic hypothesis (H3) and the four planned experiments (E1–E4).
+## Reproducing the analysis
 
-## Relationship to Paper 1 and Paper 2
+Everything in the paper's tables and figures is regenerated from the CSVs in
+`results/`. No GPU, no checkpoints, and no dataset download.
 
-- **Paper 1 (CSG-SKin)** contributes Paper 3's primary independent variable: a *disentanglement dose-response ladder* of three checkpoint families sharing the same architecture and 16-d `z_lesion` representation — `runA_grl → runB_orth1 → runB` — with progressively stronger orthogonality regularization (λ_orth = 0, 1, 5). A fourth CSG-SKin checkpoint family, `baseline_soft` (a conventional ResNet-50, 2048-d backbone feature, no disentanglement), is **not** part of this ladder — it differs in architecture, representation dimensionality, and training recipe, not just λ_orth, so it cannot be read as "dose = 0" on the same continuum. It is instead a categorical reference used to ask a different, complementary question (does introducing the disentanglement framework at all change geometry, versus a conventional classifier) — see `SPEC.md` §4 and `docs/open_questions.md` Q4.
-- **Paper 2 (DST-Skin)** contributes a second, independent Mahalanobis-based reliability-estimation methodology (Ledoit-Wolf shrinkage covariance in normalized feature space, single global mean rather than per-class), used only in the optional E4 supplementary-validation path, on Paper 2's own independently-trained backbones. It is **not** the instrument E1–E3 use: those are measured with CSG-SKin's own Mahalanobis implementation (`src/utils/ood_metrics.py`, via `cbm_revision/scripts/eval_ood_benchmarks.py` as the canonical source — `docs/threats_to_validity.md` #2), since that's the estimator actually fit on the ladder's own representations. The two are different formulas and are never pooled as if they were the same number — see `docs/geometry_metric_audit.md` §1 for why they aren't interchangeable.
-- Full audit of both source repos — module map, dependency graph, reusable functions, and known pitfalls — is in [`REPOSITORY_MAP.md`](REPOSITORY_MAP.md). Read it before writing anything that touches either repo's code or checkpoints.
+```bash
+pip install -r requirements.txt
 
-## Status
+python3 analysis/analyze_e1.py                    # Table 1, Figure 2, geometry trends
+python3 analysis/analyze_e2.py                    # geometry vs. Mahalanobis AUROC
+python3 analysis/analyze_e2_distances.py          # ID/OOD distance distributions
+python3 analysis/analyze_e2_6.py                  # all scorers vs. lambda_orth
+python3 analysis/analyze_e2_7_domain_probe.py     # domain probes
+python3 analysis/analyze_power_and_ci.py          # detectability, power, bootstrap CIs
+```
 
-Scaffolding only. No experiments have been implemented yet.
+`analyze_e2_6.py` enumerates 72,072 label arrangements per scorer and takes a
+few minutes; the rest finish in seconds, except `analyze_power_and_ci.py` at
+about one minute for the default 2x10^4 bootstrap resamples and simulations.
+
+Statistical choices, and two reporting problems this analysis turned up, are
+written up in [`docs/power_analysis.md`](docs/power_analysis.md). The analysis
+plan fixed before the experiments ran is
+[`docs/experiment_contract.md`](docs/experiment_contract.md), committed in this
+repository roughly five hours before the first result file.
+
+## Re-extracting from checkpoints
+
+Only needed to rebuild `results/` from scratch. Requires a local checkout of
+CSG-SKin (Paper 1), its trained checkpoints, and a GPU. Uncomment the torch
+lines in `requirements.txt` first.
+
+```bash
+bash run_e2_all.sh          # all 13 checkpoints, explicit paths
+```
+
+Checkpoints are always named by explicit file path, never resolved by scanning
+a directory: CSG-SKin's own `find_checkpoint` picks the newest file by mtime
+and is confirmed to select a non-best-validation checkpoint for several
+`runB`/`runB_orth1` seeds.
 
 ## Layout
 
 ```
-paper-3/
-├── README.md              # this file
-├── SPEC.md                 # research question, H3, and the E1–E4 experiment plan
-├── REPOSITORY_MAP.md      # audit of CSG-SKin and DST-Skin, dependency graph, risks
-├── scripts/                # pipeline entry points for E1–E4 (glue code, new code only)
-├── analysis/                # notebooks/scripts consuming results/ to produce figures/
-├── results/                # experiment outputs (CSVs, JSON summaries)
-├── figures/                # generated figures for the paper
-└── docs/                    # design notes, decisions, open questions
+analysis/    reads results/, writes tables and figures. No side effects on checkpoints.
+scripts/     reads checkpoints, writes results/. Needs CSG-SKin and a GPU.
+results/     per-checkpoint metrics and per-test statistics, as CSV.
+figures/     generated figures.
+docs/        experiment contract, metric audit, power analysis, open questions.
+paper/tmlr/  manuscript source (TMLR format).
 ```
 
-## Ground rules
+## Data availability
 
-- **`CSG-SKin/` and `DST-Skin/` are never modified.** No exceptions unless explicitly instructed otherwise for a specific change.
-- **Reuse through imports, not duplication.** Where Paper 1 or Paper 2 already implement something Paper 3 needs (feature extraction, Mahalanobis fitting, checkpoint loading), import and call it — don't copy-paste or re-derive it into `paper-3/`. See `REPOSITORY_MAP.md` §3 for the current inventory of what's reusable as-is.
-- **New code lives in `paper-3/`.** Every experiment script is new, added here, not patched into either source repo.
-- **Every experiment must be reproducible** — pinned seeds, recorded checkpoint paths (explicit files, never a resolved-from-directory path — see `REPOSITORY_MAP.md` risk #5), and versioned outputs in `results/`.
-- **Scope discipline.** This is a solo-author, 6-month project. Each experiment (E1–E4) should be scoped to what's needed to test H3, not expanded into a broader methods or benchmarking exercise.
+Both datasets are public:
+
+- ISIC 2018: <https://challenge.isic-archive.com/data/>
+- PAD-UFES-20: <https://data.mendeley.com/datasets/zr7vgbcyr2>
+
+`results/*.csv` holds every number the paper reports and is included here.
+
+The intermediate arrays are not: `results/e1_embeddings/` and
+`results/e2_distances/` together come to 349 MB, and two individual files
+exceed GitHub's 100 MB limit. They are byte-reproducible from the checkpoints
+via `scripts/extract_embeddings_e1.py` and `scripts/extract_auroc_e2.py`.
+
+**Open item:** for the camera-ready these should be deposited in an archive
+that issues a DOI (Zenodo accepts 50 GB per record), and the DOI added here.
+
+## Not included
+
+Trained checkpoints live with Paper 1 (CSG-SKin) and Paper 2 (DST-Skin), which
+this project reads from and never modifies. Both must be public for the
+extraction path above to be reproducible by a third party.
+
+## License
+
+Not yet chosen. This needs to be settled before the repository is made public;
+without a license file, default copyright leaves readers no right to reuse the
+code.
+
+## Citation
+
+To be added on acceptance.

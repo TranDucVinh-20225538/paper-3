@@ -1,0 +1,448 @@
+\maketitle
+
+\begin{abstract}
+Distance-based out-of-distribution (OOD) scoring assumes not only that a learned representation separates source and shifted inputs, but also that the induced ordering has the correct operational direction: larger distance should indicate greater OOD likelihood. We audit this assumption within a domain-adversarial representation-learning regime using an orthogonality-strength ladder. Three checkpoint families share the same architecture and 16-dimensional representation and differ only in $\lambda_{\mathrm{orth}} = 0, 1, 5$. Covariance conditioning changed substantially across the ladder: the shared within-class covariance condition number increased by approximately two orders of magnitude (Kendall's $\tau = 0.84$, exact $p = 2.8 \times 10^{-5}$), whereas the other four geometry summaries tested showed no significant trend. Under the pre-specified higher-distance-is-more-OOD convention, Mahalanobis AUROC (ISIC-test vs.\ PAD-UFES) remained near 0.40 at every ladder level, and cosine-to-centroid and pooled $k$-nearest-neighbor scorers showed the same pattern. Reversing score orientation corresponds to an orientation-free separability of only 0.58--0.60, showing that the distances retain weak domain-separation signal but systematically rank PAD-UFES samples as more source-typical than ISIC-test samples. In contrast, supervised probes used only as existence tests recovered domain membership from the identical embeddings at 0.72--0.81 AUROC. The supported finding is therefore a scoped dissociation between domain decodability and the weak, directionally misaligned ordering imposed by the tested source-fitted distance rules. The non-significant associations reported here are explicitly power-bounded rather than established absences: at $n = 13$ no $|\tau|$ below $0.44$ (0.47 on the ordered-ladder design) can reach $p \leq 0.05$ under the exact permutation null, and every non-significant interval remains wide enough to admit a moderate association. The finding neither shows that scalar distances contain no domain-separation signal nor establishes that domain-adversarial training or orthogonality regularization causes the misalignment.
+\end{abstract}
+
+\textbf{Keywords:} out-of-distribution detection, reliability estimation, representation geometry, disentanglement, domain-adversarial training, Mahalanobis distance, probing classifiers, distribution shift, trustworthy machine learning
+
+\section{Introduction}
+\label{sec:intro}
+
+Deep neural networks are typically evaluated by predictive accuracy, yet deployment safety also depends on how a learned representation interfaces with downstream reliability mechanisms. A distance-based OOD score must satisfy two distinct requirements. First, it must retain some ability to separate source and shifted inputs. Second, that separation must have the correct operational orientation: under the usual distance convention, shifted inputs should receive larger scores. A score can therefore contain distribution-separation signal while remaining unusable as specified if it orders the two distributions in the wrong direction. What matters is not ``geometry'' in the undifferentiated sense, but the particular geometric structure and ordering to which a scoring functional is sensitive. Covariance conditioning, class separation, local neighborhoods, angular relationships, and distributional shape can move differently under training; a change in one of these properties need not imply a corresponding change in OOD score ordering.
+
+Distance-based OOD estimators make this dependence explicit. Mahalanobis distance \citep{lee2018simple}, cosine-to-centroid distance, and non-parametric $k$-nearest-neighbor scoring \citep{sun2022knn} all read a test input's location relative to the training distribution, but they preserve different invariances and discard different aspects of representation structure. Moreover, AUROC depends only on score ordering: any strictly increasing transformation leaves AUROC unchanged, whereas reversing score orientation maps an AUROC $a$ to $1-a$. An AUROC below 0.5 is therefore not evidence that the scalar score contains no distribution-separation signal. It instead indicates that, under the stated positive-class and score-direction convention, the score ranks the two groups predominantly in the opposite direction. We consequently distinguish throughout between \emph{directed OOD AUROC}, evaluated under the pre-specified higher-distance-is-more-OOD convention, and \emph{orientation-free separability}, summarized descriptively as $\max(\mathrm{AUROC},1-\mathrm{AUROC})$. The latter is a diagnostic of separation, not a post-hoc corrected detector: a polarity chosen after observing evaluation labels cannot be claimed as an operational calibration.
+
+Domain-adversarial representation learning \citep{ganin2015unsupervised, ganin2016domain} and orthogonality-based shared/private separation objectives \citep{bousmalis2016domain} provide a useful setting in which to audit this issue because they deliberately reorganize representation structure associated with nuisance variables such as acquisition site or imaging domain. We study an orthogonality-strength ladder within a domain-adversarial regime ($\lambda_{\mathrm{orth}}=0,1,5$), holding architecture and representation dimensionality fixed across its levels. The design supports statements about how measured quantities vary with orthogonality strength within this regime; because every checkpoint already belongs to the domain-adversarial regime and the available conventional baseline is not matched in architecture or dimensionality, it does not by itself identify either domain-adversarial training or orthogonality regularization as the cause of any observed OOD behavior.
+
+Our audit separates four questions that are often conflated: (i) which measured aspects of representation structure vary across the orthogonality ladder; (ii) whether the directed OOD ranking produced by several distance-based scorers changes with those measured properties; (iii) whether the scalar scores retain any orientation-free domain separability; and (iv) whether domain membership remains recoverable from the full embeddings by a supervised reader. This separation prevents a below-chance directed AUROC from being misread as absence of information and prevents a label-informed score reversal from being presented as a deployable correction.
+
+Across the ladder, covariance conditioning changes substantially while the other four geometry summaries tested show no significant trend. Five variants from three structurally distinct distance-based scorer families remain near 0.40--0.42 directed AUROC under the pre-specified OOD convention. Their corresponding orientation-free separability is only 0.58--0.60: the scores retain weak separation signal, but their ordering is systematically opposite to the intended operational direction. Supervised probes used as decodability existence tests recover substantially stronger domain membership information at 0.72--0.81 AUROC from the full embeddings. The central finding is therefore a scoped dissociation between domain decodability and the weak, directionally misaligned ordering delivered by the tested source-fitted distance rules within the audited domain-adversarial training regime, not a claim that distances contain no information and not a causal claim that disentanglement creates the misalignment.
+
+\section{Related Work}
+\label{sec:related-work}
+
+\subsection{Post-hoc OOD Detection and Training-Time Enhancements}
+\label{sec:rw-ood}
+
+Post-hoc out-of-distribution (OOD) detection methods are typically grouped by whether they read the classifier's output layer or its internal representation. Maximum softmax probability \citep{hendrycks2017baseline} and its temperature-scaled and input-perturbed successor ODIN \citep{liang2018enhancing} score an input from the output logits directly; energy-based scoring \citep{liu2020energy} aggregates the full logit vector rather than its maximum; ReAct \citep{sun2021react} rectifies unusually high activations before scoring; ViM \citep{wang2022vim} combines a logit-space term with a residual computed in feature space; and activation-shaping \citep{djurisic2023ash} prunes a large fraction of late-layer activations at inference time without using any training-set statistics. Complementary training-time approaches can instead reshape representations or logits so that subsequent post-hoc OOD scores become more effective. Extended Logit Normalization (ELogitNorm) \citep{ding2025enhancing}, for example, introduces a feature-distance-aware training objective designed to improve a range of post-hoc OOD detectors while preserving in-distribution classification performance. Distance-based scorers treat the penultimate-layer representation as the object of interest: Mahalanobis distance \citep{lee2018simple} fits class-conditional Gaussians and scores an input by its distance to the nearest class mean; pooled $k$-nearest-neighbor distance \citep{sun2022knn} replaces this parametric fit with a non-parametric density estimate; nearest-neighbor guidance \citep{park2023nnguide} instead uses a $k$-NN-derived correction term to reduce classifier overconfidence rather than to replace the classifier score outright; and Gram-matrix scoring \citep{sastry2020gram} extracts still other structural summaries of the same representation. Benchmarking across this family, surveyed for the convolutional setting by \citet{yang2024oodsurvey} and, as the field has moved toward large pretrained encoders, for the vision-language and foundation-model setting by \citet{miyai2024generalized}, typically compares detectors across architectures and datasets under a fixed, unperturbed training regime. This study instead holds architecture and dataset fixed and asks whether the same detector's behavior on the same representation changes when the representation itself is deliberately reshaped by training -- a question orthogonal to, and not addressed by, cross-detector benchmarking.
+
+\subsection{Domain-Adversarial Training and Representation Disentanglement}
+\label{sec:rw-disentanglement}
+
+Domain-adversarial training \citep{ganin2015unsupervised, ganin2016domain} learns a representation that a discriminator cannot use to identify the input's domain, by reversing the discriminator's gradient during backpropagation. Related approaches pursue a similar goal through different mechanisms: domain separation networks \citep{bousmalis2016domain} factor a representation into shared and domain-private subspaces and use a difference loss that imposes a soft subspace-orthogonality constraint between them; correlation-alignment methods \citep{sun2016coral} instead match second-order feature statistics across domains without an adversarial objective; and adversarial discriminative adaptation \citep{tzeng2017adversarial} applies the same discriminator-based principle asymmetrically across a source and target encoder. A related but distinct family, disentangled representation learning \citep{higgins2017betavae}, seeks to factor a representation into semantically separable generative factors rather than to suppress one nuisance factor specifically; \citet{locatello2019challenging} shows that such disentanglement is not identifiable from unlabeled data without further assumptions, a caution that does not directly bear on the supervised, single-nuisance-variable setting audited here but that motivates treating any claimed disentanglement as an empirical question rather than an assumption. All of these methods are evaluated in their originating literature primarily by downstream task accuracy or by a discriminator's inability to recover the suppressed variable; none of the above is evaluated, to our knowledge, by whether a distance-based reliability estimator built on the resulting representation continues to function as it did before the intervention, which is the question this study takes up.
+
+\subsection{Shortcut Learning and Spurious Correlations}
+\label{sec:rw-shortcut}
+
+The failure mode motivating disentanglement -- a classifier exploiting a nuisance correlate of the label rather than task-relevant structure -- has been documented repeatedly in clinical imaging. Chest radiograph classifiers have been shown to encode hospital- and scanner-specific artefacts \citep{zech2018variable}; COVID-19 detectors trained on heterogeneous radiograph sources were found to rely on scanner-specific cues detectable by saliency attribution rather than on pathology \citep{degrave2021ai}; and in dermatology specifically, surgical skin markings have been shown to inflate a model's predicted probability of malignancy \citep{winkler2019association}, while \citet{bissoto2020debiasing} report that ISIC-trained classifiers retain above-chance accuracy even when the lesion region itself is masked, implicating acquisition-context cues directly. \citet{geirhos2020shortcut} synthesizes this literature under the term shortcut learning and argues that standard accuracy metrics provide no warning of it. This body of work establishes that shortcut reliance is a real and recurring failure mode and motivates disentanglement as a countermeasure; it does not, however, examine what such a countermeasure does to a reliability estimator layered on top of the resulting representation, which is the gap this study addresses.
+
+\subsection{Probing Classifiers and Representation Analysis}
+\label{sec:rw-probing}
+
+Linear probing -- training a classifier on a frozen representation to measure what that representation linearly encodes -- was introduced as a diagnostic for what intermediate layers of a network represent \citep{alain2016understanding} and has since been used across modalities to characterize learned representations independently of the objective that produced them \citep{hewitt2019designing}. \citet{belinkov2022probing} surveys this literature and cautions specifically against over-interpreting a successful probe as evidence that the original model computes or uses the probed information in the way the probe accesses it. This study's use of probing follows that caution directly: probe AUROC here is offered only as a measurement of what is linearly and non-linearly recoverable from an embedding, independent of any distance-based scorer, and is not offered as a claim about the disentanglement objective's internal computation.
+
+\subsection{Representation Geometry and Estimator Performance}
+\label{sec:rw-geometry}
+
+A separate line of work characterizes the geometry of learned representations directly, rather than what they linearly encode. Intrinsic dimensionality, estimated by nearest-neighbor methods such as the maximum-likelihood estimator of \citet{levina2004maximum}, the two-nearest-neighbor estimator of \citet{facco2017estimating}, or applied to deep network representations by \citet{ansuini2019intrinsic}, is one such summary; the conditioning of the class-covariance matrix used to fit a Mahalanobis estimator is another. Across a range of frozen vision foundation-model backbones, \citet{janiak2026geometry} report that intrinsic dimensionality and within-class spectral decay track how well Mahalanobis-style detectors perform, characterizing this relationship as an association observed across backbones rather than as a causal claim. That association is measured between representations that differ simultaneously in pretraining corpus, objective, architecture, and scale, and does not by itself establish what happens when the same geometric quantities are moved within a single, fixed representation by a specific training intervention -- the question this study asks for one such intervention, domain-adversarial disentanglement, and one such geometric summary, condition number, among others.
+
+\subsection{Reliability Estimation in Medical Imaging Under Distribution Shift}
+\label{sec:rw-medical}
+
+That predictive uncertainty degrades under dataset shift, and that this degradation is consequential for clinical decision-making, is established broadly by \citet{ovadia2019can} and discussed specifically for clinical deployment by \citet{finlayson2021clinician}. In dermatology, out-of-distribution detection for skin lesion images has been examined with deep isolation-forest scoring \citep{li2020deepif} and benchmarked systematically across covariate-shifted, near-OOD, and far-OOD regimes \citep{gutbrod2025openmibood}; deep skin-cancer classifiers have also been shown to remain overconfident on out-of-distribution inputs \citep{pacheco2020outofdistribution}. A related and largely orthogonal source of distributional heterogeneity in this domain is skin tone: \citet{daneshjou2022disparities} curated a diverse, pathologically confirmed clinical image set and showed that dermatology AI models trained on conventional benchmarks perform substantially worse on darker skin tones and uncommon diseases, a gap this study's own dataset pair does not disentangle from acquisition-device shift (Section~\ref{sec:limitations}). The field has also begun moving from task-specific convolutional classifiers toward large pretrained encoders used as frozen feature extractors in dermatology specifically \citep{yan2025panderm}; whether the geometry-reliability dissociation reported here persists in such representations is a question this study's design does not address but that motivates direct follow-up. That literature evaluates reliability estimators against naturally occurring distribution shift; it does not evaluate what happens to those estimators when the representation they operate on is itself the target of an explicit debiasing intervention, which is the setting audited here. This study also does not evaluate calibration \citep{guo2017calibration} or selective prediction \citep{elyaniv2010foundations, geifman2017selective}, nor distribution-free alternatives to both such as conformal prediction \citep{angelopoulos2023conformal}, directly -- these are natural extensions of the reliability question addressed here and are noted as such in Section~\ref{sec:limitations}.
+
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Overall study design}
+\label{sec:design}
+
+For each of 13 checkpoints (Section~\ref{sec:ladder}), we extract $z_{\mathrm{lesion}}$ embeddings for the ISIC training set and for the ISIC-test/PAD-UFES evaluation split. From these embeddings we compute three geometry metrics on the fitted Mahalanobis parameters (Section~\ref{sec:geometry-metrics}), score the evaluation split with three distance-based reliability estimators built on the identical embeddings (Section~\ref{sec:scorers}), and train three supervised probes on the same embeddings to quantify domain-information decodability independent of any distance-based scorer (Section~\ref{sec:probe}). Association between orthogonality strength, the measured representation summaries, reliability estimation, and decodability is then tested across the ladder using exact-permutation statistics (Section~\ref{sec:stats}). Figure~\ref{fig:study-design} summarizes this pipeline.
+
+\begin{figure}[t]
+\centering
+\fbox{\begin{minipage}{0.9\linewidth}
+\centering
+\textbf{Orthogonality-strength ladder within a domain-adversarial regime} \\
+$\lambda_{\mathrm{orth}} = 0, 1, 5$ (13 checkpoints) \\[0.5em]
+$\Downarrow$ \\[0.3em]
+$z_{\mathrm{lesion}}$ embeddings (16-d) \\
+ISIC-train / ISIC-test / PAD-UFES \\[0.5em]
+$\Downarrow$ \\[0.3em]
+\begin{tabular}{ccc}
+\textbf{Geometry metrics} & \textbf{Distance-based scorers} & \textbf{Domain probe} \\
+(condition number, & (Mahalanobis, cosine, & (logistic regression, \\
+Fisher ratio, Mardia $\kappa$) & pooled $k$-NN) & linear SVM, random forest) \\
+\end{tabular} \\[0.5em]
+$\Downarrow$ \\[0.3em]
+\textbf{Association across the ladder} \\
+(exact-permutation Kendall's $\tau$ / Jonckheere--Terpstra)
+\end{minipage}}
+\caption{Study design. An orthogonality-strength ladder within a domain-adversarial regime comprises three checkpoint families ($\lambda_{\mathrm{orth}} = 0, 1, 5$) sharing architecture and representation dimensionality. It is used to test whether an implicit assumption---that representation geometry reflects reliability-estimation quality---holds across changes in orthogonality strength within that regime. Geometry metrics, three distance-based scorers, and domain-information probes are computed on identical embeddings for each of 13 checkpoints (Section~\ref{sec:design}).}
+\label{fig:study-design}
+\end{figure}
+
+\subsection{Datasets and domains}
+\label{sec:datasets}
+
+We use two publicly available skin lesion datasets: ISIC 2018 \citep{codella2019skin, tschandl2018ham10000} as the source domain and PAD-UFES-20 \citep{pacheco2020padufes20} as the target domain, following the split and preprocessing pipeline of the underlying disentanglement classifier this study audits. ISIC data is partitioned into training, validation, and test subsets under a fixed, seeded split. PAD-UFES is withheld from label supervision during training. PAD-UFES serves as the adversarial target domain during training and therefore is not independent of the optimization process: the domain-adversarial branch of the audited architecture explicitly optimizes the representation to reduce discriminability between ISIC and PAD-UFES.
+
+\subsection{Orthogonality-strength ladder within a domain-adversarial regime}
+\label{sec:ladder}
+
+We use three checkpoint families from a domain-adversarial architecture with lesion and context branches, each producing a 16-dimensional lesion representation ($z_{\mathrm{lesion}}$). The three families share identical architecture, training recipe, and representation dimensionality, differing only in the strength of an orthogonality regularization penalty ($\lambda_{\mathrm{orth}}$) applied between the two branches (Table~\ref{tab:ladder}).
+
+\begin{table}[t]
+\centering
+\caption{Orthogonality-strength ladder within the audited domain-adversarial regime.}
+\label{tab:ladder}
+\begin{tabular}{lllc}
+\toprule
+Family & $\lambda_{\mathrm{orth}}$ & Mechanism & Seeds available \\
+\midrule
+\texttt{runA\_grl} & 0 & domain-adversarial component only & 42, 52, 62, 72, 82 (5) \\
+\texttt{runB\_orth1} & 1 & + orthogonality term & 42, 52, 62, 72, 82 (5) \\
+\texttt{runB} & 5 & + stronger orthogonality & 42, 52, 62 (3) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The resulting inventory comprises 13 family--seed checkpoints in total. All checkpoints are referenced by explicit, individually verified file path; none is resolved by automated directory search, to avoid a documented failure mode in which the most-recently-modified file in a run directory is not the best-performing validation epoch.
+
+We additionally report a single conventional non-adversarial ResNet-50 checkpoint, \texttt{baseline\_soft}, differing from the ladder in architecture, representation dimensionality (2048-d vs.\ 16-d), and training recipe, as a descriptive reference rather than a fourth ladder rung.
+
+\subsection{Representation geometry metrics}
+\label{sec:geometry-metrics}
+
+The selected metrics were pre-specified to represent three complementary aspects of representation geometry -- covariance conditioning, class separation, and multivariate normality -- rather than to maximize empirical correlation with downstream performance.
+
+\begin{itemize}
+\item \textbf{Condition number}: the ratio of the largest to smallest eigenvalue of the regularized, shared within-class covariance matrix used to fit the Mahalanobis estimator (Section~\ref{sec:scorers}), measuring how numerically stable that covariance's inversion is.
+\item \textbf{Fisher ratio}: the Hotelling--Lawley trace, $\mathrm{tr}(\Sigma^{-1} S_B)$, computed from the same fitted precision matrix, measuring class separation relative to within-class spread. We additionally report a decoupled scalar companion, $\mathrm{tr}(S_B)/\mathrm{tr}(S_W)$, which involves no matrix inverse and is therefore not entangled with condition number's own estimation noise -- the two are reported together because they are not statistically independent measurements when both derive from the same $\Sigma^{-1}$.
+\item \textbf{Mardia's multivariate kurtosis} \citep{mardia1970measures}: quantifies departure from the class-conditional Gaussian shape the Mahalanobis estimator assumes. The classical closed-form asymptotic null does not apply once class means and covariance are estimated in-sample from the same residuals being tested; its null distribution is calibrated by parametric bootstrap (200 resamples per checkpoint) rather than the textbook formula.
+\end{itemize}
+
+All three metrics are computed on the identical fitted Mahalanobis parameters used for scoring (Section~\ref{sec:scorers}), not from an independently re-estimated covariance, so that geometry and reliability estimation describe the same fitted object.
+
+\subsection{Distance-based reliability scorers}
+\label{sec:scorers}
+
+Each test embedding is scored by three structurally distinct distance-based rules, applied to identical embeddings and an identical ISIC-train / ISIC-test / PAD-UFES split, for every one of the 13 checkpoints:
+
+\begin{itemize}
+\item \textbf{Mahalanobis distance}: the minimum, over the 8 ISIC classes, of the squared Mahalanobis distance from the test embedding to each class mean, under a shared covariance fit on the ISIC training set with regularization $\varepsilon = 10^{-5}$.
+\item \textbf{Cosine-to-centroid}: the minimum, over the same 8 class means, of $1 - \cos(z, \mu_c)$ -- identical class-centroid structure to the Mahalanobis scorer, with the covariance/precision step removed, isolating that one variable.
+\item \textbf{Pooled $k$-nearest-neighbor distance}: the Euclidean distance from a test embedding to its $k$-th nearest neighbor in the full, class-pooled ISIC training set -- no class structure, no covariance, the most assumption-free of the three scorers \citep{sun2022knn}. $k = 10$ was specified as the primary/headline value in the analysis plan before any $k$-NN result was computed; $k = 1$ and $k = 50$ are reported as a prespecified robustness grid, not selected after the fact.
+\end{itemize}
+
+All three scorers share one pre-specified score convention (higher score, more out-of-distribution) and are evaluated by AUROC and FPR-at-95\%-TPR on the same ISIC-test-vs-PAD-UFES split. To separate operational score direction from the presence of any scalar separation signal, we report two AUROC summaries. The primary quantity is the \emph{directed OOD AUROC},
+\begin{equation}
+\mathrm{AUROC}_{\mathrm{dir}} = \Pr\!\left[s(X_{\mathrm{OOD}})>s(X_{\mathrm{ID}})\right],
+\label{eq:auroc-directed}
+\end{equation}
+computed under the pre-specified higher-distance-is-more-OOD convention. We additionally report the descriptive \emph{orientation-free separability},
+\begin{equation}
+\mathrm{AUROC}_{\mathrm{sep}} = \max\!\left\{\mathrm{AUROC}_{\mathrm{dir}},1-\mathrm{AUROC}_{\mathrm{dir}}\right\}.
+\label{eq:auroc-separability}
+\end{equation}
+The first quantity tests whether the scorer is operationally valid in its intended direction; the second tests whether the scalar score retains any rank-based separation after direction is ignored. $\mathrm{AUROC}_{\mathrm{sep}}$ is a diagnostic, not the performance of a corrected detector: reversing polarity after observing evaluation labels would be post-hoc and cannot establish deployable calibration. Because every directed AUROC observed here is below 0.5, $\mathrm{AUROC}_{\mathrm{sep}}=1-\mathrm{AUROC}_{\mathrm{dir}}$ for all entries reported in Section~\ref{sec:generalizes}.
+
+\subsection{Domain-information probe}
+\label{sec:probe}
+
+To test whether domain-discriminative information is present in an embedding independent of whether any distance-based scorer can access it, we train three supervised classifiers -- logistic regression, a linear support vector machine, and a random forest, each at library-default hyperparameters with no tuning -- to predict domain membership (ISIC-test vs.\ PAD-UFES) directly from the same $z_{\mathrm{lesion}}$ embeddings scored in Section~\ref{sec:scorers}. None of the three probes has access to the original training objective; each is a fresh classifier fit only for this analysis. Probe AUROC is reported as evidence of what is linearly and nonlinearly recoverable from the representation, not as a claim about the training objective's internal computation \citep{hewitt2019designing}.
+
+We report 5-fold stratified cross-validated AUROC on out-of-fold predictions, avoiding the same-data-fit-and-evaluate leakage that would otherwise inflate apparent decodability at this sample size and dimensionality. The ISIC-test/PAD-UFES split is class-imbalanced (approximately 2.2:1); AUROC was selected as the primary probe metric specifically because it is threshold-independent and substantially less sensitive to this imbalance than accuracy-based metrics would be, though it was not supplemented here with an imbalance-corrected metric such as balanced accuracy or precision-recall AUC.
+
+\subsection{Statistical testing}
+\label{sec:stats}
+
+The orthogonality-strength ladder within the domain-adversarial regime has only three ordinal levels with unequal per-level seed counts (5, 5, 3). We test association using Kendall's $\tau$ and, for ordered-group trend testing, the Jonckheere--Terpstra statistic \citep{terpstra1952asymptotic, jonckheere1954distribution}. Both are evaluated against a full-enumeration exact permutation null -- every distinct label arrangement consistent with the true per-rung seed counts -- following standard permutation-test principles \citep{good2005permutation}, rather than relying on an asymptotic approximation that is not assumed valid at this sample size without checking.
+
+Given the limited number of independent checkpoints ($n = 13$), we emphasize consistency across independent analyses rather than statistical significance from any single test; unadjusted exact $p$-values are reported without family-wise correction. The analysis plan fixed before any experiment ran specified a single criterion for a trend to count as supporting a ladder effect: $|\tau| \geq 0.3$ \emph{and} significance at $\alpha = 0.05$, with the sign stable between the full ladder and the common-seed subset. Section~\ref{sec:power} states what that criterion, and the non-significant results reported under it, can and cannot establish at these sample sizes.
+
+Kendall's $\tau$ $p$-values are two-sided throughout. Jonckheere--Terpstra $p$-values are one-sided upper-tail, which is the conventional reading of an ordered-alternative trend test; the statistic is centered at a positive null mean and is never negative, so a two-sided rule applied to it is not the same object as the two-sided Kendall test. The two tests are also not independent evidence at these designs. With a tie-free response the two statistics satisfy the exact identity $\tau_b = (2J - M)/\sqrt{M n_0}$, where $M$ is the number of cross-rung pairs and $n_0$ the total number of pairs, so the two-sided Jonckheere--Terpstra $p$-value is identical to the Kendall's $\tau$ $p$-value at every design used here. Where both are reported below, they are one result expressed twice rather than mutual corroboration.
+
+\subsection{Detectability, power, and interval estimates}
+\label{sec:power}
+
+A $p$-value above $\alpha$ states only that the observed statistic was not extreme under the null; it does not say which effect sizes the design could have detected, nor which the data exclude. We therefore report three further quantities for every association tested, so that each non-significant result carries an explicit bound rather than a qualitative hedge. All three are computed from the per-checkpoint results already collected; nothing is retrained and no additional data are used.
+
+First, for each design we compute $\tau_{\mathrm{crit}}$, the smallest $|\tau|$ attainable at that design whose two-sided exact permutation $p$-value reaches $0.05$. This is a property of $n$, the group sizes, and the tie structure alone: no data, however clean, can yield a significant association below it. Second, we compute power by simulation ($2 \times 10^{4}$ datasets per grid point, common random numbers across the grid) under alternatives parameterized so that the \emph{expected value of the reported statistic} equals the target $\tau$ --- a bivariate-normal alternative with $\mathbb{E}[\tau] = (2/\pi)\arcsin\rho$ for the continuous--continuous design, and a linear dose-shift alternative $y_i = \theta d_i + \varepsilon_i$, $\varepsilon_i \sim \mathcal{N}(0,1)$, whose $\mathbb{E}[\tau_b]$ is available in closed form, for the ordered-ladder design. We summarize each design by its power at $\tau = 0.3$ and by MDE$_{80\%}$, the expected $\tau$ at which power first reaches $0.80$. Third, we report a 95\% bias-corrected and accelerated (BCa) bootstrap interval \citep{efron1987better} on each observed $\tau$, over $2 \times 10^{4}$ resamples drawn \emph{within} rung so that the 5/5/3 design is held fixed, $\lambda_{\mathrm{orth}}$ being a fixed design factor rather than a sampled one. Where an observed $\tau$ attains the maximum value its design permits, the resampling distribution is one-sided by construction and no bootstrap interval is valid; such a case is reported as such rather than given an interval.
+
+Full results are in Appendix~\ref{app:power}: design-level critical values and power curves in Section~\ref{app:power-design}, per-test intervals in Section~\ref{app:power-ci}.
+
+\subsection{Reproducibility}
+\label{sec:reproducibility}
+
+Every checkpoint, seed, and preprocessing parameter used in this study is recorded by explicit value or file path; no result in this paper depends on a directory-resolved or otherwise ambiguously-selected checkpoint. Analysis code and derived results supporting this study will be made publicly available upon acceptance, as stated in the Data Availability section.
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Covariance conditioning varies across the orthogonality-strength ladder}
+\label{sec:geometry-changes}
+
+Condition number increased monotonically with $\lambda_{\mathrm{orth}}$: $75.5 \pm 7.8$ (\texttt{runA\_grl}), $559.8 \pm 125.9$ (\texttt{runB\_orth1}), $5329.9 \pm 2672.2$ (\texttt{runB}) -- a two-order-of-magnitude change across the ladder (Table~\ref{tab:geometry}, Figure~\ref{fig:geometry-ladder}). This trend was significant by exact-permutation Kendall's $\tau$ ($\tau = 0.84$, $p = 2.8 \times 10^{-5}$, $n = 13$) and sign-stable on the common-seed subset ($\tau = 0.87$, $p = 0.0012$, $n = 9$), and confirmed by Jonckheere--Terpstra trend testing ($J = 55.0$ against a null mean of 27.5, exact one-sided $p = 1.4 \times 10^{-5}$; by the identity in Section~\ref{sec:stats} its two-sided counterpart is the Kendall $p$ above, not independent corroboration). The observed $\tau = 0.84$ is the largest value the 5/5/3 design admits --- a perfectly monotone ladder --- and is the only association in this study that clears the design's critical value of $0.473$ (Section~\ref{sec:power}).
+
+The remaining four geometry metrics showed no significant trend: Fisher ratio (Hotelling--Lawley), $\tau = 0.17$, $p = 0.52$; Fisher ratio (decoupled scalar), $\tau = 0.08$, $p = 0.80$; Mardia's kurtosis ($b$), $\tau = -0.14$, $p = 0.61$; Mardia's kurtosis ($z$), $\tau = -0.17$, $p = 0.52$ (Table~\ref{tab:geometry}).
+
+\begin{quote}
+\emph{Increasing $\lambda_{\mathrm{orth}}$ is associated with a large, statistically significant change in condition number; the other four geometry metrics tested show no significant association with $\lambda_{\mathrm{orth}}$.}
+\end{quote}
+
+\begin{table}[t]
+\centering
+\caption{Representation geometry across the orthogonality-strength ladder within the domain-adversarial regime (mean $\pm$ SD).}
+\label{tab:geometry}
+\small
+\begin{tabular}{lccc}
+\toprule
+Metric & \texttt{runA\_grl} ($\lambda_{\mathrm{orth}}=0$) & \texttt{runB\_orth1} ($\lambda_{\mathrm{orth}}=1$) & \texttt{runB} ($\lambda_{\mathrm{orth}}=5$) \\
+\midrule
+Condition number & $75.5 \pm 7.8$ & $559.8 \pm 125.9$ & $5329.9 \pm 2672.2$ \\
+Fisher ratio (Hotelling--Lawley, $\times 10^5$) & $5.41 \pm 0.81$ & $5.71 \pm 0.43$ & $5.63 \pm 0.50$ \\
+Fisher ratio (decoupled scalar) & $4.69 \pm 0.65$ & $4.94 \pm 0.37$ & $4.95 \pm 0.38$ \\
+Mardia's kurtosis ($b$) & $739.9 \pm 86.5$ & $788.0 \pm 240.9$ & $679.9 \pm 63.7$ \\
+Mardia's kurtosis ($z$) & $341.1 \pm 99.3$ & $397.3 \pm 257.6$ & $270.7 \pm 53.4$ \\
+\midrule
+$n$ seeds & 5 & 5 & 3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.75\linewidth]{figs/fig2_geometry_ladder.png}
+\caption{Representation geometry across the orthogonality-strength ladder within the domain-adversarial regime. Condition number (left) and the decoupled Fisher-ratio scalar $\mathrm{tr}(S_B)/\mathrm{tr}(S_W)$ (right) for each of 13 checkpoints (gray points; mean $\pm$ SD in blue), across three levels of orthogonality strength. Condition number increases by approximately two orders of magnitude with $\lambda_{\mathrm{orth}}$ (Kendall's $\tau = 0.84$, exact $p = 2.8 \times 10^{-5}$; Table~\ref{tab:geometry}); the Fisher-ratio scalar shows no significant trend.}
+\label{fig:geometry-ladder}
+\end{figure}
+
+\subsection{Representation geometry shows no measurable association with Mahalanobis AUROC}
+\label{sec:geometry-auroc}
+
+Mahalanobis AUROC (ISIC-test vs.\ PAD-UFES) was $0.401 \pm 0.028$ (\texttt{runA\_grl}), $0.408 \pm 0.022$ (\texttt{runB\_orth1}), and $0.393 \pm 0.025$ (\texttt{runB}) -- below the chance value of 0.5 at every rung (Table~\ref{tab:mahalanobis-auroc}).
+
+None of the five geometry metrics, including condition number, showed a significant association with Mahalanobis AUROC: condition number, $\tau = -0.13$, $p = 0.59$; Fisher ratio (HL), $\tau = -0.28$, $p = 0.20$; Fisher ratio (scalar), $\tau = -0.15$, $p = 0.51$; Mardia's kurtosis ($b$), $\tau = -0.13$, $p = 0.59$; Mardia's kurtosis ($z$), $\tau = -0.13$, $p = 0.59$ (Figure~\ref{fig:geometry-vs-auroc}). AUROC itself showed no significant trend across the ladder (Jonckheere--Terpstra, $J = 25.0$ against a null mean of 27.5, exact one-sided $p = 0.65$). Given only $n = 13$ checkpoints, these non-significant results should be interpreted as inconclusive with respect to small-to-moderate monotonic associations rather than as evidence of their absence: at this design no $|\tau|$ below $0.436$ can reach $p \leq 0.05$ under the exact permutation null, and all five bootstrap intervals remain wide enough to contain $|\tau| = 0.3$, the widest admitting $|\tau| = 0.75$ (Section~\ref{sec:power}; Appendix~\ref{app:power}, Table~\ref{tab:tau-ci}).
+
+\begin{quote}
+\emph{An approximately two-orders-of-magnitude change in condition number (Section~\ref{sec:geometry-changes}) is not accompanied by a significant change in Mahalanobis AUROC; no geometry metric tested shows a significant association with AUROC.}
+\end{quote}
+
+\begin{table}[t]
+\centering
+\caption{Mahalanobis-distance AUROC (ISIC-test vs.\ PAD-UFES), by rung (mean $\pm$ SD across seeds).}
+\label{tab:mahalanobis-auroc}
+\begin{tabular}{lcccc}
+\toprule
+Rung & $\lambda_{\mathrm{orth}}$ & $n$ seeds & AUROC & FPR@95\%TPR \\
+\midrule
+\texttt{runA\_grl} & 0 & 5 & $0.401 \pm 0.028$ & $0.985 \pm 0.009$ \\
+\texttt{runB\_orth1} & 1 & 5 & $0.408 \pm 0.022$ & $0.980 \pm 0.012$ \\
+\texttt{runB} & 5 & 3 & $0.393 \pm 0.025$ & $0.985 \pm 0.003$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.6\linewidth]{figs/fig3_geometry_vs_auroc.png}
+\caption{Representation geometry does not predict Mahalanobis AUROC. Condition number vs.\ Mahalanobis-distance AUROC (ISIC-test vs.\ PAD-UFES), one point per checkpoint, colored by rung. No association is apparent (Kendall's $\tau = -0.13$, $p = 0.59$; Table~\ref{tab:geometry}); the remaining four geometry metrics show the same pattern.}
+\label{fig:geometry-vs-auroc}
+\end{figure}
+
+\subsection{Distance-based scores are systematically lower for the target domain}
+\label{sec:systematic-lower}
+
+Median Mahalanobis squared distance was lower for PAD-UFES than for ISIC-test at every one of the 13 checkpoints. Pooled across seeds within each rung: \texttt{runA\_grl}, ISIC-test median 13.50 vs.\ PAD-UFES median 8.57 ($n_{\mathrm{id}} = 25335$, $n_{\mathrm{ood}} = 11490$); \texttt{runB\_orth1}, 14.10 vs.\ 8.99 ($n_{\mathrm{id}} = 25335$, $n_{\mathrm{ood}} = 11490$); \texttt{runB}, 13.20 vs.\ 8.08 ($n_{\mathrm{id}} = 15201$, $n_{\mathrm{ood}} = 6894$).
+
+Feature-norm distributions differed modestly between domains. Pooled median $\|z\|$: \texttt{runA\_grl}, ISIC-test 6.31 vs.\ PAD-UFES 6.21; \texttt{runB\_orth1}, 6.38 vs.\ 6.28; \texttt{runB}, 6.28 vs.\ 5.97. At the level of pooled means, the direction was not consistent across rungs (\texttt{runA\_grl} mean: 6.72 ISIC-test vs.\ 6.83 PAD-UFES). The direction of this difference was not consistent at the level of means.
+
+Nearest-centroid classification assigned PAD-UFES samples to the majority ISIC class (Nevus) at 61.6\% (\texttt{runA\_grl}), 61.9\% (\texttt{runB\_orth1}), and 63.9\% (\texttt{runB}), compared to 53.0\%, 53.1\%, and 53.4\% respectively for ISIC-test samples classified against their own nearest centroid. This was 8.7--10.5 percentage points higher than the ISIC-test baseline rate (ratio 1.16--1.20).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.9\linewidth]{figs/fig4_norm_majority.png}
+\caption{Neither feature-norm difference nor majority-class attraction fully accounts for the raw ID/OOD distance gap. (A) Pooled median feature norm, ISIC-test vs.\ PAD-UFES, per rung. (B) Nearest-centroid assignment of ISIC-test and PAD-UFES samples to the majority ISIC class (Nevus), per rung. The norm difference is modest and not consistent in direction at the level of means; PAD-UFES's excess attraction to the majority class (8.7--10.5 percentage points above the ISIC-test baseline) is real but does not, on its own, account for the full distance separation in Figure~\ref{fig:geometry-vs-auroc}.}
+\label{fig:norm-majority}
+\end{figure}
+
+\subsection{Directional misalignment is consistent across three distance-based scorer families}
+\label{sec:generalizes}
+
+Pooled across all 13 checkpoints, $\mathrm{AUROC}_{\mathrm{dir}}$ was $0.402 \pm 0.024$ (Mahalanobis), $0.418 \pm 0.022$ (cosine-to-centroid), $0.424 \pm 0.023$ ($k$-NN, $k=1$), $0.414 \pm 0.024$ ($k$-NN, $k=10$), and $0.411 \pm 0.023$ ($k$-NN, $k=50$) (Table~\ref{tab:five-scorers}, Figure~\ref{fig:five-scorers}). All five directed values fall within a 0.40--0.42 range and below the chance value of 0.5. The corresponding $\mathrm{AUROC}_{\mathrm{sep}}$ values are 0.576--0.598 (Table~\ref{tab:five-scorers}, Panel B). Thus, the scalar distances retain weak domain-separation signal, but they consistently order PAD-UFES samples in the direction opposite to the scorers' pre-specified OOD semantics. Despite relying on substantially different scoring formulations -- parametric with covariance, parametric without covariance, and non-parametric -- all scorer families produced highly similar directional misalignment.
+
+None of the five scorer variants showed a significant association with $\lambda_{\mathrm{orth}}$: Mahalanobis, $\tau = -0.08$, $p = 0.80$; cosine, $\tau = 0.32$, $p = 0.19$; $k$-NN ($k=1$), $\tau = -0.05$, $p = 0.90$; $k$-NN ($k=10$), $\tau = 0.02$, $p = 1.00$; $k$-NN ($k=50$), $\tau = 0.08$, $p = 0.80$. Jonckheere--Terpstra trend testing gave the same result for all five (exact one-sided $p$ between 0.10 and 0.65; not independent of the Kendall tests above, by the identity in Section~\ref{sec:stats}). As in Section~\ref{sec:geometry-auroc}, the small sample makes these non-significant estimates inconclusive with respect to small-to-moderate effects of $\lambda_{\mathrm{orth}}$ on scorer AUROC: the critical value on the 5/5/3 ladder is $|\tau| = 0.473$, and all five intervals admit $|\tau| = 0.3$ (Appendix~\ref{app:power}, Table~\ref{tab:tau-ci}). Cosine-to-centroid has the largest point estimate of the five ($\tau = 0.32$, 95\% CI $[-0.21, 0.69]$); it exceeds $0.3$ in magnitude but falls well short of significance at this design, and we do not read it as a trend.
+
+Taken together, these results do not show that the distance scores are devoid of domain-separation information. Rather, all five variants retain only weak orientation-free separation ($\mathrm{AUROC}_{\mathrm{sep}}=0.576$--$0.598$) and impose that separation in the direction opposite to their intended operational semantics ($\mathrm{AUROC}_{\mathrm{dir}}=0.402$--$0.424$). Because this reverse orientation is identified using evaluation labels, it is interpreted diagnostically and is not presented as a post-hoc corrected OOD detector.
+
+\begin{quote}
+\emph{Three structurally distinct distance-based scorer families report directed AUROC in the same 0.40--0.42 range and orientation-free separability of only 0.58--0.60. The scores are weakly separating but consistently misaligned with the pre-specified higher-distance-is-more-OOD direction; none shows a significant association with $\lambda_{\mathrm{orth}}$.}
+\end{quote}
+
+\begin{table}[t]
+\centering
+\caption{Directed OOD AUROC and orientation-free separability (ISIC-test vs.\ PAD-UFES) for five distance-based scorers (mean $\pm$ SD across seeds). Panel A preserves the pre-specified higher-distance-is-more-OOD direction by rung. Panel B separates this operational result from descriptive, orientation-free scalar separability.}
+\label{tab:five-scorers}
+\begin{tabular}{lccc}
+\toprule
+\multicolumn{4}{l}{\textbf{Panel A: $\mathrm{AUROC}_{\mathrm{dir}}$ by ladder rung}} \\
+\addlinespace
+Scorer & \texttt{runA\_grl} & \texttt{runB\_orth1} & \texttt{runB} \\
+\midrule
+Mahalanobis & $0.401 \pm 0.028$ & $0.408 \pm 0.022$ & $0.393 \pm 0.025$ \\
+Cosine-to-centroid & $0.411 \pm 0.020$ & $0.413 \pm 0.015$ & $0.439 \pm 0.027$ \\
+$k$-NN ($k=1$) & $0.424 \pm 0.028$ & $0.428 \pm 0.020$ & $0.416 \pm 0.028$ \\
+$k$-NN ($k=10$) & $0.413 \pm 0.029$ & $0.417 \pm 0.020$ & $0.408 \pm 0.029$ \\
+$k$-NN ($k=50$) & $0.411 \pm 0.027$ & $0.414 \pm 0.020$ & $0.408 \pm 0.030$ \\
+\midrule
+\multicolumn{4}{l}{\textbf{Panel B: pooled directional validity vs.\ orientation-free separability ($n=13$)}} \\
+\addlinespace
+Scorer & $\mathrm{AUROC}_{\mathrm{dir}}$ & $\mathrm{AUROC}_{\mathrm{sep}}$ & Interpretation \\
+\midrule
+Mahalanobis & $0.402 \pm 0.024$ & $0.598 \pm 0.024$ & reversed, weak \\
+Cosine-to-centroid & $0.418 \pm 0.022$ & $0.582 \pm 0.022$ & reversed, weak \\
+$k$-NN ($k=1$) & $0.424 \pm 0.023$ & $0.576 \pm 0.023$ & reversed, weak \\
+$k$-NN ($k=10$) & $0.414 \pm 0.024$ & $0.586 \pm 0.024$ & reversed, weak \\
+$k$-NN ($k=50$) & $0.411 \pm 0.023$ & $0.589 \pm 0.023$ & reversed, weak \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.65\linewidth]{figs/fig5_three_scorers.png}
+\caption{Three distance-based scorer families are directionally misaligned alike. Directed OOD AUROC (ISIC-test vs.\ PAD-UFES) for Mahalanobis distance, cosine-to-centroid similarity, and pooled $k$-nearest-neighbor distance ($k = 1, 10, 50$), computed on the identical embeddings and grouped by rung (mean $\pm$ SD across seeds). Dashed line: chance (AUROC $= 0.5$). All five variants fall within 0.40--0.42 under the pre-specified higher-distance-is-more-OOD convention; their pooled orientation-free separability is 0.576--0.598 (Table~\ref{tab:five-scorers}, Panel B).}
+\label{fig:five-scorers}
+\end{figure}
+
+\subsection{Domain information remains decodable despite directionally misaligned distance scoring}
+\label{sec:decodable}
+
+On the identical embeddings scored in Section~\ref{sec:scorers}, three supervised probes recovered domain membership (ISIC-test vs.\ PAD-UFES) at: \texttt{runA\_grl}, 0.719 (logistic regression), 0.717 (linear SVM), 0.807 (random forest); \texttt{runB\_orth1}, 0.741, 0.740, 0.815; \texttt{runB}, 0.750, 0.751, 0.800 (Table~\ref{tab:probe-vs-distance}, Figure~\ref{fig:decodable}). AUROC exceeded 0.70 for all three probe families at every rung.
+
+None of the three probes showed a significant association with $\lambda_{\mathrm{orth}}$: logistic regression, $\tau = 0.26$, $p = 0.30$; linear SVM, $\tau = 0.26$, $p = 0.30$; random forest, $\tau = -0.11$, $p = 0.70$. These non-significant estimates are subject to the same $n = 13$ limitation and should not be interpreted as evidence that small-to-moderate associations are absent; each of the three intervals admits $|\tau| = 0.3$ (Appendix~\ref{app:power}, Table~\ref{tab:tau-ci}).
+
+\begin{quote}
+\emph{Three independent classifiers, applied to the same embeddings scored by the distance-based scorers in Section~\ref{sec:scorers}, recover domain membership at 0.72--0.81 AUROC at every $\lambda_{\mathrm{orth}}$ level tested; probe AUROC shows no significant association with $\lambda_{\mathrm{orth}}$.}
+\end{quote}
+
+\begin{table}[t]
+\centering
+\caption{Mean directed distance-scorer AUROC vs.\ domain-probe AUROC, by rung. Directed AUROC is the unweighted mean across the five scorer variants in Table~\ref{tab:five-scorers}; it is not the Mahalanobis-only value in Table~\ref{tab:mahalanobis-auroc}. \texttt{baseline\_soft} is a descriptive reference, not a fourth ladder point (Section~\ref{sec:ladder}).}
+\label{tab:probe-vs-distance}
+\small
+\begin{tabular}{llcccc}
+\toprule
+Rung & Role & Directed AUROC & Probe (LR) & Probe (SVM) & Probe (RF) \\
+\midrule
+\texttt{runA\_grl} & primary ladder & 0.412 & 0.719 & 0.717 & 0.807 \\
+\texttt{runB\_orth1} & primary ladder & 0.414 & 0.741 & 0.740 & 0.815 \\
+\texttt{runB} & primary ladder & 0.413 & 0.750 & 0.751 & 0.800 \\
+\texttt{baseline\_soft} & categorical reference ($n=1$) & 0.828 & 0.998 & 0.997 & 0.977 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figs/fig6_directional_misalignment.pdf}
+\caption{Domain decodability exceeds both directed distance ranking and orientation-free scalar separability. For each rung, the mean directed AUROC across five distance scorers (open circles) is linked to its orientation-free counterpart, $1-\mathrm{AUROC}_{\mathrm{dir}}$ in this below-chance regime (gray squares), and to mean AUROC across three supervised domain probes (black triangles). Directed distance ranking remains near 0.41, orientation-free separability near 0.59, and supervised probe AUROC near 0.75--0.77. Solid segments mark the score-orientation gap; dashed segments mark the remaining gap between scalar distance separability and supervised decodability from the full embedding. Orientation-free values are diagnostic and do not represent a detector whose polarity was calibrated on independent data.}
+\label{fig:decodable}
+\end{figure}
+
+\subsection{Descriptive reference: a conventional non-adversarial baseline}
+\label{sec:baseline-reference}
+
+For a single ResNet-50 checkpoint (\texttt{baseline\_soft}; one seed, architecture and representation dimensionality differing from the ladder, Section~\ref{sec:ladder}), pooled distance-scorer AUROC was 0.828 and probe AUROC was 0.998 (logistic regression), 0.997 (linear SVM), and 0.977 (random forest) (Table~\ref{tab:probe-vs-distance}).
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Interpretation}
+\label{sec:interpretation}
+
+The results support a three-level interpretation that separates operational validity, scalar-score information, and information recoverable from the full embedding.
+
+\paragraph{Level 1: the pre-specified operational direction fails.}
+All five distance-score variants produced $\mathrm{AUROC}_{\mathrm{dir}}=0.402$--$0.424$ under the higher-distance-is-more-OOD convention (Section~\ref{sec:generalizes}). PAD-UFES samples were therefore ranked as more source-typical, rather than less source-typical, than ISIC-test samples. This below-chance result is an operational polarity failure: a reliability gate using the score direction specified before evaluation would rank the audited target domain incorrectly. The agreement across Mahalanobis, cosine-to-centroid, and pooled $k$-NN shows that this directional pattern is not confined to covariance inversion or to one value of $k$.
+
+\paragraph{Level 2: the scalar scores retain weak separation signal.}
+A directed AUROC below 0.5 does not imply absence of information. Removing orientation yields $\mathrm{AUROC}_{\mathrm{sep}}=0.576$--$0.598$, so the scalar distances weakly separate the two domains while ordering them opposite to the intended OOD semantics. This distinction is essential: the result is neither chance-level non-separation nor evidence of a valid detector after simply negating its output. The reverse orientation was identified from evaluation labels; without polarity selection on independent calibration data, $\mathrm{AUROC}_{\mathrm{sep}}$ remains a diagnostic summary rather than deployable performance.
+
+\paragraph{Level 3: the full embeddings support stronger supervised decodability.}
+Logistic-regression, linear-SVM, and random-forest probes recovered domain membership at 0.72--0.81 AUROC from the same embeddings (Section~\ref{sec:decodable}). Figure~\ref{fig:decodable} therefore exposes two distinct gaps: the gap between the intended and observed direction of the scalar scores, and the further gap between their weak orientation-free separability and the stronger supervised decodability available from the full representation. Probe success is used only as an existence test; it does not imply that the original classifier or any unsupervised reliability mechanism uses the decoded information.
+
+This three-level interpretation also constrains the geometry result. Covariance conditioning moved by approximately two orders of magnitude (Section~\ref{sec:geometry-changes}), but neither directed Mahalanobis AUROC nor the other scorer families tracked that change. The result is not that geometry is irrelevant. It is that condition number alone is insufficient to predict either the operational direction or the strength of the rank ordering induced by these source-fitted scores. Section~\ref{sec:systematic-lower}'s supporting evidence---a modest, direction-inconsistent norm difference and majority-class attraction 8.7--10.5 percentage points above the ISIC-test baseline---confirms a systematic distance-ordering difference but does not fully explain its origin. Establishing why the targeted domain is ranked as source-typical remains future work.
+
+The supported claim is consequently scoped: within this domain-adversarial training regime and for its adversarial target domain, the tested source-fitted distance rules are directionally misaligned, their scalar outputs retain weak separation, and the full embeddings retain stronger supervised domain decodability. This is not a claim that scalar distances contain no information, that supervised probes constitute an OOD detector, or that domain-adversarial training or orthogonality regularization causes the observed ordering.
+
+\subsection{Scorer invariance, sensitivity, and what ``geometry'' can predict}
+\label{sec:invariance}
+
+The results are easier to interpret if raw representation geometry is distinguished from \emph{scorer-relevant geometry}. For a full-rank affine change of coordinates $z' = Az+b$, with class means and the shared covariance transformed consistently as $\mu'_c=A\mu_c+b$ and $\Sigma'=A\Sigma A^\top$, the unregularized squared Mahalanobis distance is invariant:
+\begin{equation}
+(z'-\mu'_c)^\top (\Sigma')^{-1}(z'-\mu'_c)
+= (z-\mu_c)^\top \Sigma^{-1}(z-\mu_c).
+\label{eq:mahal-invariance}
+\end{equation}
+Yet the numerical condition number $\kappa(\Sigma)$ can change greatly under a non-orthogonal $A$. Thus covariance conditioning can move by orders of magnitude without forcing Mahalanobis rankings, and therefore AUROC, to move commensurately. The small ridge term used here ($\varepsilon=10^{-5}$) weakens exact affine invariance in finite samples but does not change the conceptual point: condition number is a property of a fitted covariance representation, not a sufficient statistic for Mahalanobis OOD ranking.
+
+The other scorers preserve different structure. Cosine-to-centroid distance is invariant to a common orthogonal rotation and positive uniform rescaling, but is sensitive to translation and anisotropic transformations. Euclidean $k$-NN distance is invariant to translation and orthogonal transformations; positive uniform rescaling multiplies all distances by the same constant and therefore preserves their ordering, whereas anisotropic transformations can change neighborhoods. Finally, AUROC itself is invariant to every strictly increasing transformation of a score. These invariances imply that the chain
+\[
+\text{raw geometric change} \;\Rightarrow\; \text{score change} \;\Rightarrow\; \text{ranking change} \;\Rightarrow\; \text{AUROC change}
+\]
+is not automatic.
+
+This distinction changes the interpretation of the present null associations. The finding is not that ``geometry does not matter'' for distance-based reliability estimation. Rather, the measured covariance-conditioning change is not sufficient to predict directed OOD ranking in this regime, and the other measured summaries do not show systematic ladder trends. The convergence of Mahalanobis, cosine-to-centroid, and pooled $k$-NN on the same polarity reversal and similarly weak orientation-free separability points to a mismatch between the intended OOD semantics and the particular geometric orderings these scorers impose. This suggests a general audit principle beyond medical imaging: when representation-learning interventions are combined with post-hoc reliability mechanisms, evaluation should separately test score polarity, orientation-free separation, and information recoverable from the underlying representation, while identifying the invariances and sensitivities of the downstream scorer.
+
+\subsection{Relation to literature}
+\label{sec:relation-lit}
+
+Section~\ref{sec:related-work} situates this study within six adjacent literatures; here we return to the three whose relationship to the present findings is most direct. Mahalanobis-distance OOD detection \citep{lee2018simple} and its non-parametric successors, including pooled $k$-nearest-neighbor scoring \citep{sun2022knn}, are typically evaluated by benchmarking AUROC across datasets and architectures (Section~\ref{sec:rw-ood}), not by separately auditing score polarity, orientation-free separability, and full-embedding decodability after a representation-changing intervention. This study does not propose a competitor to either method; both are used as audit instruments, alongside cosine-to-centroid scoring. Their common result here is a shared directional misalignment with weak residual separation, not a comparative ranking of the methods and not evidence that their scalar outputs contain no information.
+
+Domain-adversarial representation learning \citep{ganin2015unsupervised, ganin2016domain} and orthogonality-based shared/private separation objectives \citep{bousmalis2016domain} are among the strategies proposed to reduce reliance on nuisance or shortcut features in deep classifiers \citep{geirhos2020shortcut}, a failure mode documented repeatedly in clinical imaging specifically (Section~\ref{sec:rw-shortcut}). The present study does not identify this training family as the cause of the observed ordering, because all ladder checkpoints already use the domain-adversarial regime and the conventional baseline is not matched. Instead, it asks whether source-fitted distance scores retain their intended polarity and how much separation remains when orientation is ignored. For the audited target domain, the intended polarity fails and residual scalar separability is weak; causal attribution to domain-adversarial training, orthogonality regularization, architecture, or dimensionality remains outside the evidence provided here.
+
+The distinction this study draws between the presence of information in a representation and a specific estimator's ability to use it is closely related to, and constrained by, the probing-classifier literature's own caution that a supervised probe's success does not establish that a model itself uses the decoded information in the way the probe accesses it \citep{hewitt2019designing, belinkov2022probing}. This study makes a narrower claim than that literature warns against overreaching toward: the probes here are not offered as evidence about what the disentanglement objective computes internally, only as an independent measurement of what remains extractable from its output representation, without characterizing the mechanism by which that representation was produced.
+
+This finding also bears on the geometry-performance association reported across frozen foundation-model backbones by \citet{janiak2026geometry} (Section~\ref{sec:rw-geometry}). That association is measured between representations whose provenance -- pretraining corpus, objective, architecture, and scale -- differs simultaneously, so it cannot by itself distinguish a geometric explanation from a shared dependence on pretraining. The present study varies orthogonality strength within a fixed architecture and representation dimensionality and finds no corresponding geometry--AUROC association for the measured quantities tested here, including condition number (Section~\ref{sec:geometry-auroc}). Whether this absence of association reflects a property specific to domain-adversarial disentanglement, to this dataset pair, or more generally to interventions that hold pretraining fixed, is a question this study's design cannot resolve on its own and that we regard as a natural target for direct follow-up.
+
+More broadly, these findings suggest that evaluating learned representations only through downstream predictive performance may overlook how a downstream reliability score orders shifted inputs. Raw geometric summaries, scorer-relevant geometry, operational score direction, orientation-free scalar separability, and supervised decodability are related but distinct properties; change in one should not automatically be interpreted as change in the others.
+
+For practitioners combining domain-adversarial representation learning with a distance-based reliability gate, this audit implies a specific caution: a score can weakly distinguish the targeted domain yet assign that distinction the wrong operational polarity. Validation should therefore test both discrimination and direction on calibration data independent of final evaluation, rather than infer operational validity from an orientation-free metric or from general model qualification.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+PAD-UFES is not an arbitrary target domain in this design: it is the domain the disentanglement architecture's adversarial branch is trained against. Since PAD-UFES also serves as the adversarial domain during training, our conclusions should be interpreted as characterizing representations learned under this training regime rather than all domain shifts.
+
+$\mathrm{AUROC}_{\mathrm{sep}}$ is computed from the observed evaluation ordering and is intentionally reported only as an orientation-free diagnostic. This study does not include an independent calibration split on which score polarity could be selected and then transferred unchanged to a held-out test domain. It therefore does not establish that negating a distance score yields an operational detector, that the reverse polarity transfers to another shift, or that a deployment system could identify the required polarity without labeled shifted data.
+
+The comparison against a conventional, non-adversarial baseline (Section~\ref{sec:baseline-reference}) differs from the orthogonality-strength ladder in architecture, representation dimensionality, and training recipe simultaneously, and is drawn from a single checkpoint. It is reported descriptively and does not support causal attribution of the ladder findings to domain-adversarial training or orthogonality regularization, as opposed to architecture or dimensionality; a matched, non-adversarial checkpoint with the same architecture and 16-dimensional representation would be needed for that purpose, and no such checkpoint exists in the inventory available for this study.
+
+The ladder itself spans three ordinal treatment levels with unequal per-level seed counts ($n = 13$ total, $n = 9$ on the common-seed subset), and we state the resulting limits on detection quantitatively rather than as a qualitative caveat (Section~\ref{sec:power}; Appendix~\ref{app:power}). At $n = 13$ the smallest $|\tau|$ that can reach $p \leq 0.05$ under the exact permutation null is $0.436$ for the continuous--continuous design used in Section~\ref{sec:geometry-auroc} and $0.473$ for the 5/5/3 ordered ladder used in Sections~\ref{sec:generalizes}--\ref{sec:decodable}, rising to $0.609$ on the $n = 9$ common-seed subset. Two consequences follow and we state both. First, the criterion the analysis plan fixed in advance --- $|\tau| \geq 0.3$ \emph{and} significance at $\alpha = 0.05$ (Section~\ref{sec:stats}) --- lies below all three of those thresholds, and the conjunction was therefore unsatisfiable before any data were collected: an association of exactly the pre-specified size could not have been declared significant at this design. Second, the power to detect an expected $\tau = 0.3$ is $0.27$, $0.23$, and $0.14$ for the three designs respectively, and 80\% power is first reached at $\tau = 0.54$, $0.57$, and $0.69$. The non-significant associations reported here are consequently informative about large effects and close to uninformative about moderate ones.
+
+The bootstrap intervals in Appendix~\ref{app:power} state the same limit from the data side. Of the seventeen non-significant associations reported in Sections~\ref{sec:geometry-changes}--\ref{sec:decodable}, every one has a 95\% interval wide enough to contain $|\tau| = 0.3$; the narrowest still admits $|\tau| = 0.40$ and the widest $|\tau| = 0.75$. Taken individually, none of them distinguishes ``no association'' from ``a moderate association this design cannot resolve.'' What the reported pattern rests on is therefore not any single interval but the consistency of the point estimates: sixteen of the seventeen fall below $|\tau| = 0.3$, spread across four geometry metrics against $\lambda_{\mathrm{orth}}$, five geometry metrics against Mahalanobis AUROC, five scorer variants, and three probes, with cosine-to-centroid ($\tau = 0.32$, non-significant) the sole exception. Those seventeen tests are not mutually independent --- the geometry metrics derive from a common fitted precision matrix, the five scorer variants read the same embeddings, and the three probes share one feature set --- so their agreement is weaker evidence than seventeen independent replications would be. This bounds the dissociation reported in Sections~\ref{sec:geometry-auroc}--\ref{sec:decodable} rather than removing it: the directional misalignment itself is a large, consistently signed effect measured on tens of thousands of scored images per checkpoint, whereas what the $n = 13$ design cannot resolve is whether $\lambda_{\mathrm{orth}}$ modulates it.
+
+Exact-permutation testing was used throughout in place of asymptotic approximations not verified to hold at this scale, and $p$-values are reported without family-wise correction across the multiple metrics and scorers tested, on the stated basis that conclusions rest on consistency of effect across independent analyses rather than on any single threshold crossing; a reader applying a stricter correction should note that the one large, load-bearing effect in this study --- condition number's association with $\lambda_{\mathrm{orth}}$, $\tau = 0.840$, which is the maximum the 5/5/3 design permits --- survives any standard correction, while every non-significant result was already reported as such before any correction was considered.
+
+This study does not include a replication on a domain independent of the ISIC/PAD-UFES pair, nor a check of generalization beyond the single architecture audited here. Both were considered and are not included: a third-domain replication would require a dataset without documented image overlap with the training data, which was not available within the scope of this study, and a cross-architecture check was not pursued for the same reason. Neither omission is filled by the baseline reference described above, which addresses architecture and dimensionality but not domain independence. The bootstrap check proposed elsewhere to quantify shared estimation noise between condition number and Fisher ratio, both derived from the same fitted precision matrix, was not performed; condition number, not Fisher ratio, is the metric driving the geometric finding in Section~\ref{sec:geometry-changes}, which bounds but does not eliminate this as a source of uncertainty in the broader geometry measurement. Checkpoint selection was verified by explicit file path rather than by directory search, but was not independently cross-checked against logged validation curves beyond the single file available per run. Mardia's kurtosis null distribution was calibrated with 200 bootstrap resamples per checkpoint (Section~\ref{sec:geometry-metrics}); the Mahalanobis regularization constant ($\varepsilon = 10^{-5}$) and the 16-dimensional representation itself were inherited from the audited classifier rather than varied as part of this study. ``Reliability estimation'' throughout this study refers specifically to out-of-distribution detection AUROC; broader constructs such as calibration \citep{guo2017calibration} or selective prediction, including its distribution-free variants \citep{elyaniv2010foundations, geifman2017selective, angelopoulos2023conformal}, are not addressed.
+
+These limitations reinforce the three-level interpretation: the pre-specified operational direction is invalid for the audited target domain, the scalar scores retain weak orientation-free separation, and the full embeddings support stronger supervised decodability. None of these observations alone establishes transfer to an unseen domain or the performance of a calibrated deployment system.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+This study audited the relationship among measured representation structure, distance-based OOD ordering, scalar separability, and supervised domain decodability within a fixed domain-adversarial training regime. Across an orthogonality-strength ladder, covariance conditioning changed by approximately two orders of magnitude, while the other four geometry summaries tested showed no significant ladder trend. This geometric change was not accompanied by a corresponding change in Mahalanobis OOD ranking or in any of the other tested distance-score families.
+
+Under the pre-specified higher-distance-is-more-OOD convention, five variants from three distance-based scorer families produced $\mathrm{AUROC}_{\mathrm{dir}}=0.402$--$0.424$. These scores were not devoid of domain-separation information: ignoring orientation yields $\mathrm{AUROC}_{\mathrm{sep}}=0.576$--$0.598$. The information encoded in the scalar distances was therefore weak and systematically ordered in the direction opposite to the intended OOD semantics. Because the reverse orientation was identified from evaluation labels, it is a diagnostic finding rather than evidence of an operationally corrected detector. Supervised probes applied to the full embeddings recovered substantially stronger domain membership information at 0.72--0.81 AUROC.
+
+The supported conclusion is consequently narrower and more precise than either complete distance inaccessibility or a causal claim about disentanglement: within the audited representations, domain membership remains decodable, scalar distance scores retain weak separation, and the tested source-fitted distance rules impose a directionally misaligned OOD ordering. Raw geometric summaries, scorer-relevant geometry, score orientation, orientation-free separability, and supervised decodability should therefore be treated as distinct objects of evaluation. Reliability mechanisms layered on learned representations should be re-validated after representation-changing interventions, including explicit validation of score polarity on data independent of the final evaluation set, rather than assumed to inherit validity from classification performance or generic geometric diagnostics.
+
+\section*{Broader Impact Statement}
+\label{sec:broader-impact}
+
+This study is a retrospective, methodological audit conducted entirely on two pre-existing, publicly available, de-identified skin-lesion image datasets. It trains no new diagnostic classifier, deploys no system, and releases no model intended for clinical use; the audited checkpoints form an orthogonality-strength ladder within a domain-adversarial regime for the purpose of this analysis. No patients were recruited and no new clinical images were acquired.
+
+The central risk this work is positioned to mitigate, rather than create, is the silent failure of a distance-based reliability safeguard in a deployed pipeline: if such a safeguard is assumed to function on representations produced by a domain-adversarial training regime, without being re-validated against the domain targeted during training, it may fail to flag inputs from precisely that domain. Making this failure mode explicit and measurable is intended to reduce, not increase, the risk of over-trusting a distance-based safeguard in a safety-critical medical imaging pipeline. We are not aware of a plausible negative use of this study's findings or artifacts: the audit protocol, the geometry metrics, and the statistical tests reported here characterize an existing training regime rather than introduce a new capability that could be misapplied. We therefore do not identify a significant risk of harm requiring further mitigation beyond the cautions already stated in Section~\ref{sec:limitations} regarding the scope of the claims.

@@ -1,124 +1,31 @@
 """
-extract_auroc_e2.py -- E2 input: one checkpoint in, one Mahalanobis AUROC/FPR95 row out.
+E2 input -- one checkpoint in, one Mahalanobis AUROC/FPR95 row out.
 
-Refactored from CSG-SKin's own cbm_revision/scripts/eval_ood_benchmarks.py --
-the canonical E1-E3 Mahalanobis source per threats_to_validity.md #2 -- into a
-single-checkpoint, explicit-path script matching extract_embeddings_e1.py's
-design exactly (Task 3 pattern: one checkpoint per invocation; a batch driver
-looping over all 13 primary-ladder checkpoints is a separate, later,
-not-yet-authorized step, same as it was for E1).
+Refactored from CSG-SKin's cbm_revision/scripts/eval_ood_benchmarks.py, the
+canonical Mahalanobis source for E1-E3, into a single-checkpoint script with
+an explicit path, matching extract_embeddings_e1.py. A batch driver over all
+13 primary-ladder checkpoints is a separate step.
 
-Two departures from the canonical script's own control flow, both REQUIRED
-by this task's explicit-checkpoint-path requirement, not optional style
-choices:
+Two departures from the canonical script, both forced by the
+explicit-checkpoint requirement:
 
-  1. No _find_ckpt() / _method_ckpt_dir(), anywhere. The canonical script
-     resolves each seed's checkpoint by globbing a directory for the
-     newest-by-mtime best-*.ckpt file. open_questions.md Q3 confirms this is
-     the SAME class of bug REPOSITORY_MAP.md risk #5 already found in
-     find_checkpoint -- silently wrong for several runB/runB_orth1 seed
-     directories. This script takes --checkpoint as an explicit,
-     individually-verified file path instead; --rung/--seed are metadata
-     recorded on the output row, never used to locate anything.
+  1. No directory globbing. The canonical script resolves each seed's
+     checkpoint to the newest-by-mtime best-*.ckpt in a directory, which is
+     confirmed wrong for several runB/runB_orth1 seeds (open_questions.md
+     Q3, REPOSITORY_MAP.md risk 5). Here --checkpoint is an explicit file
+     path; --rung and --seed are recorded on the output row and never used
+     to locate anything.
 
-  2. Method dispatch is by --method (baseline/csg/effb3_single), not a
-     hardcoded per-rung checkpoint-directory table. The canonical script's
-     `methods` list only covers "Baseline Soft" / "Run A / GRL" /
-     "Run B (orth=1.0)" -- it has NO case for `runB` (orth=5.0) at all, so it
-     could never have produced an AUROC number for 3 of E1a's 13
-     primary-ladder checkpoints. Since --method here only selects an
-     ARCHITECTURE (identical across runA_grl/runB_orth1/runB -- all
-     CSGLiteLightning; only lambda_orth differed during training, which
-     doesn't change how features are extracted from an already-trained
-     checkpoint), runB is supported with no special-casing needed. This was
-     a genuine gap in the canonical script for this project's purposes, not
-     something this refactor introduces by choice.
+  2. Dispatch is by --method (baseline/csg/effb3_single), not by a per-rung
+     directory table. The canonical table covers Baseline Soft, Run A/GRL
+     and Run B (orth=1.0) but has no entry for runB (orth=5.0), so it could
+     not produce a number for 3 of the 13 checkpoints. Since --method here
+     selects only an architecture -- identical across the three CSG rungs,
+     which differ in lambda_orth during training but not in how features are
+     read out of a trained checkpoint -- runB needs no special case.
 
-Everything else is mirrored, not reinvented:
-  - _build_isic_train_loader: byte-for-byte the same construction as
-    extract_embeddings_e1.py's (which itself already mirrors this canonical
-    script) -- same split_config, same eval_transform, same SkinDataset.
-  - build_id_ood_test_dataloaders(dm) for the ISIC-test (ID) / PAD-UFES (OOD)
-    split -- imported from src.datasets.splits, not reimplemented. Requires
-    dm.setup() first (extract_embeddings_e1.py deliberately never calls
-    dm.setup() because it doesn't need this loader; this script does).
-  - The Mahalanobis fit + score + AUROC/FPR95 computation: reuses
-    src.utils.ood_metrics.compute_mahalanobis_params_from_arrays,
-    mahalanobis_min_squared_distances, and fpr_at_95_tpr directly (imported,
-    not reimplemented), with the same y_ood/score concatenation convention as
-    eval_ood_benchmarks.py::_compute_scores's Mahalanobis branch. reg_eps is
-    the one deliberate exception to "mirrored exactly" -- see below.
-  - seed_everything(42) + pl.seed_everything(42, workers=True): the
-    canonical script's own fixed global seed (NOT the checkpoint's own
-    training seed) -- reproduced exactly, once per invocation.
-
-REG_EPS DELIBERATELY DIVERGES FROM eval_ood_benchmarks.py, one line, by
-decision (open_questions.md Q5): the canonical script fits Mahalanobis with
-reg_eps=1e-3, an undocumented override with no comment anywhere in CSG-SKin
-justifying it over compute_mahalanobis_params_from_arrays's own default,
-reg_eps=1e-5 -- confirmed by reading every occurrence of reg_eps in the
-codebase before making this change, not assumed. This script uses 1e-5
-instead, matching extract_embeddings_e1.py's geometry metrics, so E1's
-precision matrix and E2's precision matrix for the same nominal (rung, seed)
-are the literal same fitted object -- required for the paper's actual claim
-(geometry of THIS precision matrix explains AUROC) to be about one thing,
-not two differently-regularized approximations of it. Every other part of
-eval_ood_benchmarks.py's methodology (loader, transform, split, scoring
-convention) is still reproduced exactly -- this is the one intentional,
-reasoned departure, not an oversight.
-
-E2.5 (open_questions.md Q6): also persists the raw per-sample Mahalanobis
-distances (results/e2_distances/{rung}_s{seed}.npz) and a
-distance_summary.csv row (id/ood mean, median, p95). This is explicitly a
-separate, non-pre-registered investigation into why AUROC<0.5, not a quiet
-extension of experiment_contract.md's E2 scope -- it does not change
-e2_auroc.csv's AUROC/FPR95 values or how they were computed, only adds a new
-side-output. History: drafted, then deliberately reverted (to keep the
-script matching exactly what produced the already-analyzed e2_auroc.csv
-while E2.5's value was still uncertain), then restored after a one-checkpoint
-temporary-print check (runA_grl s42) confirmed median(OOD)=7.82 <
-median(ID)=13.78 and mean(OOD)=16.47 < mean(ID)=20.64 -- crossing the
-pre-declared threshold for running this across the full 13-checkpoint ladder
-rather than leaving it for a future paper.
-
-Does not implement batching or E2's Kendall/Jonckheere analysis -- this
-script's whole job is one checkpoint, one row, matching Task 3's scope for
-E1 before Task 4 looped it.
-
-E2.6 (open_questions.md Q6, experiment_contract.md): E2a found no
-association between geometry and Mahalanobis AUROC, and E2.5 ruled out an
-implementation bug, a dominant NV attractor, and a large norm-collapse
-effect as the explanation, while confirming Mahalanobis's own Gaussian
-assumption is catastrophically and training-invariantly violated (Mardia z
-191-824, no trend with lambda_orth). This adds exactly two more scorers on
-the SAME embeddings, to test whether the failure is in Mahalanobis
-specifically or in the representation generally -- both formulas locked in
-experiment_contract.md BEFORE this code was written:
-
-  - Cosine-to-centroid: min_c [1 - cosine_similarity(z, mean_c)], reusing
-    the exact same per-class `means` already fit for Mahalanobis. Isolates
-    one variable: drop the covariance/precision-matrix step, keep the
-    nearest-centroid structure.
-  - Pooled k-NN distance (Sun et al. 2022-style): Euclidean distance to the
-    k-th nearest neighbor in the full ISIC-train set, ALL classes pooled
-    together -- no per-class structure, no covariance, no distributional
-    assumption at all (decided explicitly over a per-class-then-min variant,
-    which would have kept too much structural similarity to Mahalanobis to
-    serve as a real contrast). K_VALUES = (1, 10, 50); k=10 is the
-    pre-registered primary/headline value, {1, 50} are pre-registered
-    robustness grid points -- all three are always computed and written,
-    never selected after seeing which looks best.
-
-Also persists the full raw z_lesion embeddings (train/id/ood, never
-subsampled -- a k-NN reference pool must be the complete train set or
-k-th-neighbor distances aren't meaningful) as a byproduct, which also
-resolves the separate UMAP-visualization blocker without a further rerun.
-
-Rerun note: e2_auroc.csv and distance_summary.csv are append-only writers
-(same as the original E2.5 restore) -- clear/rename them before re-running
-run_e2_all.sh, or the duplicate-row check in analyze_e2.py will (correctly)
-reject the merge. e2_6_scorer_comparison.csv is a new file as of this
-change; no pre-existing rows to worry about on the first run.
+Everything downstream of feature extraction is the canonical script's own
+code, imported rather than reimplemented.
 """
 
 from __future__ import annotations

@@ -25,7 +25,7 @@
 | [`src/utils/ood_metrics.py`](CSG-SKin/src/utils/ood_metrics.py) | Mahalanobis fit/score, `find_checkpoint`, feature collectors | CSG's own (separate, non-shrinkage) Mahalanobis implementation |
 | [`scripts/check_leakage.py`](CSG-SKin/scripts/check_leakage.py) | Domain linear-probe on `z_lesion`/`z_context`/`backbone_raw` | The paper's central metric; richest feature collector (`collect_test_features_csg/baseline`) |
 | [`scripts/train_csg.py`](CSG-SKin/scripts/train_csg.py) / [`scripts/train_baseline.py`](CSG-SKin/scripts/train_baseline.py) | Training entry points | Each does its own post-fit Mahalanobis + writes `summary.json` |
-| `checkpoints/` (symlink → `/Users/cubo/ResearchArtifacts/checkpoints`) | 67 `.ckpt` files, 5 methods × up to 5 seeds | See §7 of the CSG guide for stale-duplicate caveats before pointing anything at a *directory* rather than a file |
+| `checkpoints/` (symlink → `~/ResearchArtifacts/checkpoints`) | 67 `.ckpt` files, 5 methods × up to 5 seeds | See §7 of the CSG guide for stale-duplicate caveats before pointing anything at a *directory* rather than a file |
 
 ### DST-Skin (Mahalanobis / OOD-triage side)
 

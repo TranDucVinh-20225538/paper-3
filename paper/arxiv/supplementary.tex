@@ -1,0 +1,172 @@
+% supplementary.tex -- standalone compilable Supplementary Material for
+% BSPC. Not \input from paper.tex; compiled to its own PDF, as is standard
+% for Elsevier supplementary submissions.
+%
+% Scope, per direct instruction: full figures, full tables, implementation
+% detail, robustness, and extra statistics only. No result already in the
+% main text is re-explained or re-interpreted here -- captions state what is
+% shown, not what it means; that reading is in the main manuscript.
+
+\documentclass{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xr}
+\usepackage{hyperref}
+
+% Cross-references into the main manuscript's section/figure/table numbers.
+% Requires paper.tex to have been compiled at least once (paper.aux present)
+% -- if numbers show as "??", compile paper.tex first, then this file.
+\externaldocument{paper}
+
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thesection}{S}
+
+% \suppsec{<n>}{<title>} -- open supplementary section S<n> AND pin the figure
+% and table counters to it, so every float inside the section is numbered S<n>.
+% Heading number and float numbers are driven by the same argument and cannot
+% diverge. They previously did: with plain \subsection* headings and free-running
+% counters, section "S4" contained a float LaTeX numbered "S3" and section "S7"
+% contained one numbered "S4", while the main text referred to the latter, by
+% hardcoded string, as "Supplementary Table S7". The main text deliberately does
+% not \usepackage{xr} into this file (an arXiv build of paper.tex alone would
+% then render every such reference as "??"), so those strings cannot be
+% link-checked by LaTeX -- which is exactly why the numbers they name have to be
+% guaranteed here instead.
+%
+% Invariant: at most one figure and at most one table per section. A section
+% needing two tables is split into two sections (see S8/S9), rather than being
+% allowed to introduce a second, unnumbered float.
+\newcommand{\suppsec}[2]{%
+  \setcounter{figure}{#1}\addtocounter{figure}{-1}%
+  \setcounter{table}{#1}\addtocounter{table}{-1}%
+  \subsection*{S#1. #2}%
+}
+
+\title{Supplementary Material\\[0.3em]
+\large Decodable but Not Accessible: Auditing Distance-Based Reliability Estimation on Disentangled Skin-Lesion Representations}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-1.5em}
+
+\section*{Supplementary Material}
+
+\suppsec{1}{Full geometry metrics across the ladder}
+
+Extends main-text Figure~\ref{fig:ladder-trend}, which shows only condition number and the decoupled Fisher-ratio scalar. Figure~\ref{fig:s1} shows all five pre-specified geometry metrics (condition number, Fisher ratio---Hotelling--Lawley and decoupled-scalar forms---and Mardia's multivariate kurtosis, $b$ and $z$ statistics), one gray point per checkpoint ($n=13$), mean $\pm$ SD in blue, across the three rungs of the disentanglement ladder. Table~\ref{tab:s1-geometry-stats} reports the corresponding exact-permutation Kendall's $\tau$ and Jonckheere--Terpstra statistics for all five metrics.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/figure1_e1_ladder_trend.png}
+\caption{All five geometry metrics across the disentanglement ladder.}
+\label{fig:s1}
+\end{figure}
+
+\input{tables/table_s1_geometry_stats}
+
+\suppsec{2}{Full geometry-vs-AUROC statistics}
+
+Extends main-text Figure~\ref{fig:geometry-vs-auroc}, which shows only the condition-number panel. Figure~\ref{fig:s2} shows all five geometry metrics plotted against Mahalanobis AUROC, one point per checkpoint, colored by rung. Table~\ref{tab:s2-auroc-stats} reports the corresponding statistics, including a $10^5$-draw Monte Carlo cross-check of the exact Kendall's $\tau$ $p$-values.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/figure2_e2_geometry_vs_auroc.png}
+\caption{All five geometry metrics vs.\ Mahalanobis AUROC.}
+\label{fig:s2}
+\end{figure}
+
+\input{tables/table_s2_auroc_stats}
+
+\suppsec{3}{Baseline reference: implementation detail}
+
+The \texttt{baseline\_soft} checkpoint (main text, Section~\ref{sec:results-baseline}) is reported as a descriptive reference, not a fourth ladder point. Table~\ref{tab:s3-baseline} gives its full distance-scorer and probe AUROC (single checkpoint, seed 42). Its geometry metrics (condition number, Fisher ratio, Mardia's kurtosis) were not computed: because \texttt{baseline\_soft} was never load-bearing for any statistical claim in this study, computing its geometry was out of scope.
+
+\begin{table}[htbp]
+\centering
+\caption{\texttt{baseline\_soft}: distance-scorer and domain-probe AUROC ($n=1$ checkpoint).}
+\label{tab:s3-baseline}
+\begin{tabular}{lc}
+\toprule
+Scorer / probe & AUROC \\
+\midrule
+Mahalanobis          & 0.863 \\
+Cosine-to-centroid   & 0.715 \\
+$k$-NN ($k=1$)       & 0.865 \\
+$k$-NN ($k=10$)      & 0.853 \\
+$k$-NN ($k=50$)      & 0.844 \\
+Distance-scorer mean & 0.828 \\
+\midrule
+Probe: logistic regression & 0.998 \\
+Probe: linear SVM          & 0.997 \\
+Probe: random forest       & 0.977 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\suppsec{4}{ID/OOD Mahalanobis distance distributions}
+
+Figure~\ref{fig:s4} shows the full histogram, kernel density estimate, and empirical CDF of the ID (ISIC-test) and OOD (PAD-UFES) Mahalanobis squared-distance distributions, pooled across seeds within each rung, supporting the median-gap numbers reported in main-text Section~\ref{sec:results-distance-gap}. The distributions are visibly overlapping, not cleanly separated.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/figure_e2_5_distance_distributions.png}
+\caption{ID vs.\ OOD Mahalanobis squared-distance distributions, all three rungs.}
+\label{fig:s4}
+\end{figure}
+
+\suppsec{5}{Full nearest-centroid confusion matrix}
+
+Figure~\ref{fig:s5} shows the complete $8\times8$ nearest-centroid confusion matrix for ISIC-test samples (true label vs.\ predicted centroid), supporting the majority-class-only summary in main-text Figure~\ref{fig:mechanism}B.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/figure_id_confusion_matrix.png}
+\caption{Full ISIC-test nearest-centroid confusion matrix, all 8 classes.}
+\label{fig:s5}
+\end{figure}
+
+\suppsec{6}{Full predicted-class distribution for PAD-UFES}
+
+Figure~\ref{fig:s6} shows the complete nearest-centroid predicted-class distribution for PAD-UFES samples across all 8 ISIC classes, extending main-text Figure~\ref{fig:mechanism}B's majority-class (Nevus)-only summary.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/figure_predicted_class_ood.png}
+\caption{Full PAD-UFES nearest-centroid predicted-class distribution, all 8 classes.}
+\label{fig:s6}
+\end{figure}
+
+\suppsec{7}{Full statistical test results: scorers and probes vs.\ rung order}
+
+Table~\ref{tab:s7-scorer-probe-stats} reports exact-permutation Kendall's $\tau$ (and, for the five distance-based scorers, Jonckheere--Terpstra) for AUROC vs.\ rung order, for every scorer variant (main-text Section~\ref{sec:results-scorer-comparison}) and every probe (main-text Section~\ref{sec:results-probe}) individually. No metric or scorer reaches significance at $n=13$; none was omitted from this table.
+
+\input{tables/table_s7_scorer_probe_stats}
+
+\suppsec{8}{Detectability and power of the permutation designs}
+
+Supports main-text Section~\ref{sec:power} and the Limitations discussion in Section~\ref{sec:discussion-limitations}. Figure~\ref{fig:s8}A shows the power of each permutation design as a function of the expected Kendall's $\tau$ under the alternative, with the design's critical value $\tau_{\mathrm{crit}}$ and the pre-specified $|\tau|\geq0.3$ threshold marked; Figure~\ref{fig:s8}B shows every observed $\tau$ with its 95\% bootstrap interval against the band of values no design at this sample size can resolve. Table~\ref{tab:s8-power} gives the design-level numbers; the per-test intervals plotted in panel B are tabulated in Section~S9.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/figure_s_power.png}
+\caption{(A) Power of each exact permutation design against expected $\tau$ ($2\times10^{4}$ simulated datasets per point, common random numbers; $\alpha=0.05$, two-sided). Dotted vertical lines mark each design's $\tau_{\mathrm{crit}}$; the dashed red line marks the pre-specified $|\tau|\geq0.3$ criterion, which falls below every $\tau_{\mathrm{crit}}$. (B) Observed $\tau$ and 95\% BCa bootstrap intervals for all 21 reported associations. The shaded band spans $\pm\tau_{\mathrm{crit}}$ for the 5/5/3 ladder: no $|\tau|$ inside it can reach $p\leq0.05$ at this design. Condition number vs.\ $\lambda_{orth}$ sits at the design ceiling and is shown as a point without an interval (see Table~\ref{tab:s9-tau-ci}).}
+\label{fig:s8}
+\end{figure}
+
+\input{tables/table_s8_power}
+
+\suppsec{9}{Interval estimates for every reported association}
+
+Table~\ref{tab:s9-tau-ci} tabulates the point estimates and intervals plotted in Figure~\ref{fig:s8}B: every Kendall's $\tau$ reported anywhere in this study, with a 95\% stratified-bootstrap BCa interval and the largest effect size that interval leaves unexcluded. No association tested is omitted.
+
+\input{tables/table_s9_tau_ci}
+
+\end{document}

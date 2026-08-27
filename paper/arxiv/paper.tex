@@ -1,0 +1,39 @@
+% paper.tex -- main manuscript file for Biomedical Signal Processing and
+% Control (BSPC, Elsevier). Uses elsarticle, Elsevier's standard class.
+%
+% NOT verified against BSPC's current downloaded author-guidelines template
+% -- this uses elsarticle's documented defaults. Confirm class options and
+% any journal-specific style file against the actual BSPC template before
+% submission.
+%
+% Camera-ready / arXiv formatting: no line numbers, single-spaced.
+
+\documentclass{elsarticle}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[numbers]{natbib}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+\usepackage{multirow}
+
+\journal{Biomedical Signal Processing and Control}
+
+\begin{document}
+
+\input{titlepage}
+
+\input{sections/introduction}
+\input{sections/methods}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/conclusion}
+\input{sections/acknowledgements}
+
+\bibliographystyle{elsarticle-num}
+\bibliography{refs}
+
+\end{document}

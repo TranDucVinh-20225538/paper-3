@@ -1,38 +1,21 @@
 """
-analyze_e2_distances.py -- E2.5: ID vs OOD Mahalanobis distance distributions.
+E2.5 -- ID vs OOD Mahalanobis distance distributions.
 
-AUROC is a ranking statistic: AUROC<0.5 shows P(distance(ID) > distance(OOD))
-> 0.5, and nothing else. It cannot, on its own, distinguish "PAD-UFES
-genuinely sits closer to ISIC class centroids in this representation" (a
-finding about the representation) from a Mahalanobis-implementation bug
-(wrong min/argmax direction, a train/test transform mismatch, wrong
-centroid classes, wrong feature-extraction hook) that would produce the
-identical AUROC number. Several of those were ruled out by reading source
-directly (see extract_auroc_e2.py's module docstring), but the actual
-distance distributions were never inspected before this script existed.
+AUROC is a ranking statistic: AUROC < 0.5 says P(distance(ID) >
+distance(OOD)) > 0.5 and nothing more. On its own it cannot separate
+"PAD-UFES genuinely sits closer to the ISIC class centroids in this
+representation" from an implementation fault -- a flipped min/argmax, a
+train/test transform mismatch, wrong centroid classes, the wrong feature
+hook -- since all of those produce the same number. Several were ruled out
+by reading the source; this script inspects the distributions themselves.
 
-Reads:
-  - results/distance_summary.csv (per-checkpoint id/ood mean, median, p95 --
-    written by extract_auroc_e2.py alongside e2_auroc.csv).
-  - results/e2_distances/{rung}_s{seed}.npz (full per-sample s_id/s_ood
-    arrays, same source).
+Reads results/distance_summary.csv (per-checkpoint id/ood mean, median, p95)
+and results/e2_distances/{rung}_s{seed}.npz (full per-sample s_id/s_ood),
+both written by extract_auroc_e2.py.
 
-Produces, for the primary ladder only (runA_grl/runB_orth1/runB -- same
-scope as E1a/E2a, baseline_soft excluded per SPEC.md Sec 4):
-  - The distance_summary.csv table, printed directly.
-  - Per-rung verdict: does median(OOD) < median(ID) actually hold, checked
-    explicitly, not inferred from AUROC.
-  - Figure: histogram + KDE + ECDF of ID vs OOD distances, one column per
-    rung, pooling all seeds within a rung (more samples per panel, and a
-    genuine representation effect should show up consistently across seeds
-    within a rung rather than needing to be teased out of one seed alone).
-  - A boxplot across all three rungs for a compact side-by-side comparison.
-
-If every rung shows median(OOD) < median(ID) clearly, with separated (not
-just differently-tailed) distributions, that's the direct evidence needed
-to treat AUROC<0.5 as a real property of the representation rather than an
-unverified inference from a single summary number. If not, this is exactly
-where a Mahalanobis-implementation bug would show up instead.
+Covers the primary ladder only; baseline_soft is excluded, as in E1a/E2a.
+Produces the distance_summary table, per-rung histogram/KDE/ECDF panels, and
+a pooled boxplot.
 """
 
 from __future__ import annotations

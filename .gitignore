@@ -1,9 +1,37 @@
 .DS_Store
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
-.ipynb_checkpoints/
 *.egg-info/
+.ipynb_checkpoints/
 .venv/
 venv/
-paper-3/results/e1_embeddings/
+
+# Extracted embeddings and per-sample distances: 349 MB of intermediates that
+# GitHub will not take (two files exceed the 100 MB hard limit). Regenerate
+# with scripts/extract_embeddings_e1.py and scripts/extract_auroc_e2.py, or
+# fetch the archived copy -- see README, Data availability.
+results/e1_embeddings/
+results/e2_distances/
+
+# Working backups kept only while a rerun is in flight
+results/_pre_dedup_backup/
+paper/_pre_power_analysis_backup/
+
+# LaTeX build products (.bbl and .pdf are kept: arXiv needs the former,
+# readers want the latter)
+*.aux
+*.log
+*.out
+*.blg
+*.spl
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.toc
+paper/arxiv.zip
+
+# Pristine copy of the advisor-supplied manuscript folder, kept for diffing
+paper/_advisor_baseline/

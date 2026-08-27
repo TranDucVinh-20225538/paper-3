@@ -1,0 +1,387 @@
+\begin{thebibliography}{51}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Alain \& Bengio(2016)Alain and Bengio]{alain2016understanding}
+Guillaume Alain and Yoshua Bengio.
+\newblock Understanding intermediate layers using linear classifier probes.
+\newblock \emph{arXiv preprint arXiv:1610.01644}, 2016.
+
+\bibitem[Angelopoulos \& Bates(2023)Angelopoulos and
+  Bates]{angelopoulos2023conformal}
+Anastasios~N. Angelopoulos and Stephen Bates.
+\newblock Conformal prediction: A gentle introduction.
+\newblock \emph{Foundations and Trends in Machine Learning}, 16\penalty0
+  (4):\penalty0 494--591, 2023.
+
+\bibitem[Ansuini et~al.(2019)Ansuini, Laio, Macke, and
+  Zoccolan]{ansuini2019intrinsic}
+Alessio Ansuini, Alessandro Laio, Jakob~H. Macke, and Davide Zoccolan.
+\newblock Intrinsic dimension of data representations in deep neural networks.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, volume~32, 2019.
+
+\bibitem[Belinkov(2022)]{belinkov2022probing}
+Yonatan Belinkov.
+\newblock Probing classifiers: Promises, shortcomings, and advances.
+\newblock \emph{Computational Linguistics}, 48\penalty0 (1):\penalty0 207--219,
+  2022.
+
+\bibitem[Bissoto et~al.(2020)Bissoto, Fornaciali, Valle, and
+  Avila]{bissoto2020debiasing}
+Alceu Bissoto, Michel Fornaciali, Eduardo Valle, and Sandra Avila.
+\newblock Debiasing skin lesion datasets and models? not so fast.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition Workshops (CVPRW)}, pp.\  740--741, 2020.
+
+\bibitem[Bousmalis et~al.(2016)Bousmalis, Trigeorgis, Silberman, Krishnan, and
+  Erhan]{bousmalis2016domain}
+Konstantinos Bousmalis, George Trigeorgis, Nathan Silberman, Dilip Krishnan,
+  and Dumitru Erhan.
+\newblock Domain separation networks.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, volume~29, pp.\  343--351, 2016.
+
+\bibitem[Codella et~al.(2019)Codella, Gutman, Celebi, Helba, Marchetti, Dusza,
+  Kalloo, Liopyris, Mishra, Kittler, and Halpern]{codella2019skin}
+Noel Codella, David Gutman, M.~Emre Celebi, Brian Helba, Michael~A. Marchetti,
+  Stephen~W. Dusza, Aadi Kalloo, Konstantinos Liopyris, Nabin Mishra, Harald
+  Kittler, and Allan Halpern.
+\newblock Skin lesion analysis toward melanoma detection 2018: A challenge
+  hosted by the international skin imaging collaboration (isic).
+\newblock \emph{arXiv preprint arXiv:1902.03368}, 2019.
+
+\bibitem[Daneshjou et~al.(2022)Daneshjou, Vodrahalli, Novoa, Jenkins, Liang,
+  Rotemberg, Ko, Swetter, Bailey, Gevaert, et~al.]{daneshjou2022disparities}
+Roxana Daneshjou, Kailas Vodrahalli, Roberto~A. Novoa, Melissa Jenkins, Weixin
+  Liang, Veronica Rotemberg, Justin Ko, Susan~M. Swetter, Elizabeth~E. Bailey,
+  Olivier Gevaert, et~al.
+\newblock Disparities in dermatology {AI} performance on a diverse, curated
+  clinical image set.
+\newblock \emph{Science Advances}, 8\penalty0 (32):\penalty0 eabq6147, 2022.
+
+\bibitem[DeGrave et~al.(2021)DeGrave, Janizek, and Lee]{degrave2021ai}
+Alex~J. DeGrave, Joseph~D. Janizek, and Su-In Lee.
+\newblock {AI} for radiographic {COVID-19} detection selects shortcuts over
+  signal.
+\newblock \emph{Nature Machine Intelligence}, 3\penalty0 (7):\penalty0
+  610--619, 2021.
+
+\bibitem[Ding et~al.(2026)Ding, Liu, Unger, and Eilertsen]{ding2025enhancing}
+Yifan Ding, Xixi Liu, Jonas Unger, and Gabriel Eilertsen.
+\newblock Enhancing out-of-distribution detection with extended logit
+  normalization.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition (CVPR)}, 2026.
+\newblock arXiv:2504.11434.
+
+\bibitem[Djurisic et~al.(2023)Djurisic, Bozanic, Ashok, and
+  Liu]{djurisic2023ash}
+Andrija Djurisic, Nebojsa Bozanic, Arjun Ashok, and Rosanne Liu.
+\newblock Extremely simple activation shaping for out-of-distribution
+  detection.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2023.
+
+\bibitem[Efron(1987)]{efron1987better}
+Bradley Efron.
+\newblock Better bootstrap confidence intervals.
+\newblock \emph{Journal of the American Statistical Association}, 82\penalty0
+  (397):\penalty0 171--185, 1987.
+
+\bibitem[El-Yaniv \& Wiener(2010)El-Yaniv and Wiener]{elyaniv2010foundations}
+Ran El-Yaniv and Yair Wiener.
+\newblock On the foundations of noise-free selective classification.
+\newblock \emph{Journal of Machine Learning Research}, 11:\penalty0 1605--1641,
+  2010.
+
+\bibitem[Facco et~al.(2017)Facco, d'Errico, Rodriguez, and
+  Laio]{facco2017estimating}
+Elena Facco, Maria d'Errico, Alex Rodriguez, and Alessandro Laio.
+\newblock Estimating the intrinsic dimension of datasets by a minimal
+  neighborhood information.
+\newblock \emph{Scientific Reports}, 7:\penalty0 12140, 2017.
+
+\bibitem[Finlayson et~al.(2021)Finlayson, Subbaswamy, Singh, Bowers, Kupke,
+  Zittrain, Kohane, and Saria]{finlayson2021clinician}
+Samuel~G. Finlayson, Adarsh Subbaswamy, Karandeep Singh, John Bowers, Annabel
+  Kupke, Jonathan Zittrain, Isaac~S. Kohane, and Suchi Saria.
+\newblock The clinician and dataset shift in artificial intelligence.
+\newblock \emph{New England Journal of Medicine}, 385\penalty0 (3):\penalty0
+  283--286, 2021.
+\newblock \doi{10.1056/NEJMc2104626}.
+
+\bibitem[Ganin \& Lempitsky(2015)Ganin and Lempitsky]{ganin2015unsupervised}
+Yaroslav Ganin and Victor Lempitsky.
+\newblock Unsupervised domain adaptation by backpropagation.
+\newblock In \emph{Proceedings of the 32nd International Conference on Machine
+  Learning (ICML)}, 2015.
+
+\bibitem[Ganin et~al.(2016)Ganin, Ustinova, Ajakan, Germain, Larochelle,
+  Laviolette, Marchand, and Lempitsky]{ganin2016domain}
+Yaroslav Ganin, Evgeniya Ustinova, Hana Ajakan, Pascal Germain, Hugo
+  Larochelle, Fran{\c{c}}ois Laviolette, Mario Marchand, and Victor Lempitsky.
+\newblock Domain-adversarial training of neural networks.
+\newblock \emph{Journal of Machine Learning Research}, 17\penalty0
+  (59):\penalty0 1--35, 2016.
+
+\bibitem[Geifman \& El-Yaniv(2017)Geifman and El-Yaniv]{geifman2017selective}
+Yonatan Geifman and Ran El-Yaniv.
+\newblock Selective classification for deep neural networks.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, volume~30, 2017.
+
+\bibitem[Geirhos et~al.(2020)Geirhos, Jacobsen, Michaelis, Zemel, Brendel,
+  Bethge, and Wichmann]{geirhos2020shortcut}
+Robert Geirhos, J{\"o}rn-Henrik Jacobsen, Claudio Michaelis, Richard Zemel,
+  Wieland Brendel, Matthias Bethge, and Felix~A. Wichmann.
+\newblock Shortcut learning in deep neural networks.
+\newblock \emph{Nature Machine Intelligence}, 2\penalty0 (11):\penalty0
+  665--673, 2020.
+
+\bibitem[Good(2005)]{good2005permutation}
+Phillip~I. Good.
+\newblock \emph{Permutation, Parametric, and Bootstrap Tests of Hypotheses}.
+\newblock Springer, 3rd edition, 2005.
+
+\bibitem[Guo et~al.(2017)Guo, Pleiss, Sun, and Weinberger]{guo2017calibration}
+Chuan Guo, Geoff Pleiss, Yu~Sun, and Kilian~Q. Weinberger.
+\newblock On calibration of modern neural networks.
+\newblock In \emph{Proceedings of the 34th International Conference on Machine
+  Learning (ICML)}, pp.\  1321--1330, 2017.
+
+\bibitem[Gutbrod et~al.(2025)Gutbrod, Rauber, Nunes, and
+  Palm]{gutbrod2025openmibood}
+Max Gutbrod, David Rauber, Danilo~Weber Nunes, and Christoph Palm.
+\newblock {OpenMIBOOD}: Open medical imaging benchmarks for out-of-distribution
+  detection.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition (CVPR)}, pp.\  25874--25886, 2025.
+\newblock \doi{10.1109/CVPR52734.2025.02410}.
+
+\bibitem[Hendrycks \& Gimpel(2017)Hendrycks and Gimpel]{hendrycks2017baseline}
+Dan Hendrycks and Kevin Gimpel.
+\newblock A baseline for detecting misclassified and out-of-distribution
+  examples in neural networks.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2017.
+
+\bibitem[Hewitt \& Liang(2019)Hewitt and Liang]{hewitt2019designing}
+John Hewitt and Percy Liang.
+\newblock Designing and interpreting probes with control tasks.
+\newblock In \emph{Proceedings of the 2019 Conference on Empirical Methods in
+  Natural Language Processing and the 9th International Joint Conference on
+  Natural Language Processing (EMNLP-IJCNLP)}, 2019.
+
+\bibitem[Higgins et~al.(2017)Higgins, Matthey, Pal, Burgess, Glorot, Botvinick,
+  Mohamed, and Lerchner]{higgins2017betavae}
+Irina Higgins, Loic Matthey, Arka Pal, Christopher Burgess, Xavier Glorot,
+  Matthew Botvinick, Shakir Mohamed, and Alexander Lerchner.
+\newblock {$\beta$-VAE}: Learning basic visual concepts with a constrained
+  variational framework.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2017.
+
+\bibitem[Janiak et~al.(2026)Janiak, Binkowski, and
+  Kajdanowicz]{janiak2026geometry}
+Denis Janiak, Jakub Binkowski, and Tomasz Kajdanowicz.
+\newblock A geometry-based view of {Mahalanobis} {OOD} detection.
+\newblock In \emph{International Conference on Machine Learning (ICML)}, 2026.
+\newblock arXiv:2510.15202.
+
+\bibitem[Jonckheere(1954)]{jonckheere1954distribution}
+A.~R. Jonckheere.
+\newblock A distribution-free $k$-sample test against ordered alternatives.
+\newblock \emph{Biometrika}, 41\penalty0 (1--2):\penalty0 133--145, 1954.
+\newblock \doi{10.1093/biomet/41.1-2.133}.
+
+\bibitem[Lee et~al.(2018)Lee, Lee, Lee, and Shin]{lee2018simple}
+Kimin Lee, Kibok Lee, Honglak Lee, and Jinwoo Shin.
+\newblock A simple unified framework for detecting out-of-distribution samples
+  and adversarial attacks.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, volume~31, 2018.
+
+\bibitem[Levina \& Bickel(2004)Levina and Bickel]{levina2004maximum}
+Elizaveta Levina and Peter~J. Bickel.
+\newblock Maximum likelihood estimation of intrinsic dimension.
+\newblock \emph{Advances in Neural Information Processing Systems (NeurIPS)},
+  17, 2004.
+
+\bibitem[Li et~al.(2020)Li, Lu, Desrosiers, and Liu]{li2020deepif}
+Xuan Li, Yuchen Lu, Christian Desrosiers, and Xue Liu.
+\newblock Out-of-distribution detection for skin lesion images with deep
+  isolation forest.
+\newblock In \emph{Machine Learning in Medical Imaging (MLMI), held in
+  conjunction with MICCAI}, volume 12436 of \emph{Lecture Notes in Computer
+  Science}, pp.\  91--100. Springer, 2020.
+\newblock \doi{10.1007/978-3-030-59861-7_10}.
+
+\bibitem[Liang et~al.(2018)Liang, Li, and Srikant]{liang2018enhancing}
+Shiyu Liang, Yixuan Li, and R.~Srikant.
+\newblock Enhancing the reliability of out-of-distribution image detection in
+  neural networks.
+\newblock In \emph{International Conference on Learning Representations
+  (ICLR)}, 2018.
+
+\bibitem[Liu et~al.(2020)Liu, Wang, Owens, and Li]{liu2020energy}
+Weitang Liu, Xiaoyun Wang, John~D. Owens, and Yixuan Li.
+\newblock Energy-based out-of-distribution detection.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, volume~33, pp.\  21464--21475, 2020.
+
+\bibitem[Locatello et~al.(2019)Locatello, Bauer, Lucic, Raetsch, Gelly,
+  Sch{\"o}lkopf, and Bachem]{locatello2019challenging}
+Francesco Locatello, Stefan Bauer, Mario Lucic, Gunnar Raetsch, Sylvain Gelly,
+  Bernhard Sch{\"o}lkopf, and Olivier Bachem.
+\newblock Challenging common assumptions in the unsupervised learning of
+  disentangled representations.
+\newblock In \emph{Proceedings of the 36th International Conference on Machine
+  Learning (ICML)}, 2019.
+
+\bibitem[Mardia(1970)]{mardia1970measures}
+K.~V. Mardia.
+\newblock Measures of multivariate skewness and kurtosis with applications.
+\newblock \emph{Biometrika}, 57\penalty0 (3):\penalty0 519--530, 1970.
+\newblock \doi{10.1093/biomet/57.3.519}.
+
+\bibitem[Miyai et~al.(2025)Miyai, Yang, Zhang, Ming, Lin, Yu, Irie, Joty, Li,
+  Li, Liu, Yamasaki, and Aizawa]{miyai2024generalized}
+Atsuyuki Miyai, Jingkang Yang, Jingyang Zhang, Yifei Ming, Yueqian Lin, Qing
+  Yu, Go~Irie, Shafiq Joty, Yixuan Li, Hai~Helen Li, Ziwei Liu, Toshihiko
+  Yamasaki, and Kiyoharu Aizawa.
+\newblock Generalized out-of-distribution detection and beyond in vision
+  language model era: A survey.
+\newblock \emph{Transactions on Machine Learning Research}, 2025.
+\newblock Published July 2025.
+
+\bibitem[Ovadia et~al.(2019)Ovadia, Fertig, Ren, Nado, Sculley, Nowozin,
+  Dillon, Lakshminarayanan, and Snoek]{ovadia2019can}
+Yaniv Ovadia, Emily Fertig, Jie Ren, Zachary Nado, D.~Sculley, Sebastian
+  Nowozin, Joshua~V. Dillon, Balaji Lakshminarayanan, and Jasper Snoek.
+\newblock Can you trust your model's uncertainty? {E}valuating predictive
+  uncertainty under dataset shift.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, volume~32, 2019.
+
+\bibitem[Pacheco et~al.(2020{\natexlab{a}})Pacheco, Lima, Salom{\~a}o,
+  Krohling, Biral, de~Angelo, Alves, Esgario, Simora, Castro,
+  et~al.]{pacheco2020padufes20}
+Andre G.~C. Pacheco, Gustavo~R. Lima, Amanda~S. Salom{\~a}o, Breno Krohling,
+  Igor~P. Biral, Gabriel~G. de~Angelo, F{\'a}bio C.~R. Alves, Jos{\'e} G.~M.
+  Esgario, Alana~C. Simora, Pedro B.~C. Castro, et~al.
+\newblock {PAD-UFES-20}: A skin lesion dataset composed of patient data and
+  clinical images collected from smartphones.
+\newblock \emph{Data in Brief}, 32:\penalty0 106221, 2020{\natexlab{a}}.
+
+\bibitem[Pacheco et~al.(2020{\natexlab{b}})Pacheco, Sastry, Trappenberg, Oore,
+  and Krohling]{pacheco2020outofdistribution}
+Andre G.~C. Pacheco, Chandramouli~S. Sastry, Thomas Trappenberg, Sageev Oore,
+  and Renato~A. Krohling.
+\newblock On out-of-distribution detection algorithms with deep neural skin
+  cancer classifiers.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition Workshops (CVPRW)}, pp.\  732--733,
+  2020{\natexlab{b}}.
+\newblock \doi{10.1109/CVPRW50498.2020.00374}.
+
+\bibitem[Park et~al.(2023)Park, Jung, and Teoh]{park2023nnguide}
+Jaewoo Park, Yoon~Gyo Jung, and Andrew Beng~Jin Teoh.
+\newblock Nearest neighbor guidance for out-of-distribution detection.
+\newblock In \emph{Proceedings of the IEEE/CVF International Conference on
+  Computer Vision (ICCV)}, pp.\  1686--1695, 2023.
+
+\bibitem[Sastry \& Oore(2020)Sastry and Oore]{sastry2020gram}
+Chandramouli~Shama Sastry and Sageev Oore.
+\newblock Detecting out-of-distribution examples with {Gram} matrices.
+\newblock In \emph{Proceedings of the 37th International Conference on Machine
+  Learning (ICML)}, 2020.
+
+\bibitem[Sun \& Saenko(2016)Sun and Saenko]{sun2016coral}
+Baochen Sun and Kate Saenko.
+\newblock Deep {CORAL}: Correlation alignment for deep domain adaptation.
+\newblock In \emph{European Conference on Computer Vision Workshops (ECCVW)},
+  pp.\  443--450, 2016.
+
+\bibitem[Sun et~al.(2021)Sun, Guo, and Li]{sun2021react}
+Yiyou Sun, Chuan Guo, and Yixuan Li.
+\newblock {ReAct}: Out-of-distribution detection with rectified activations.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, volume~34, pp.\  144--157, 2021.
+
+\bibitem[Sun et~al.(2022)Sun, Ming, Zhu, and Li]{sun2022knn}
+Yiyou Sun, Yifei Ming, Xiaojin Zhu, and Yixuan Li.
+\newblock Out-of-distribution detection with deep nearest neighbors.
+\newblock In \emph{Proceedings of the 39th International Conference on Machine
+  Learning (ICML)}, 2022.
+
+\bibitem[Terpstra(1952)]{terpstra1952asymptotic}
+T.~J. Terpstra.
+\newblock The asymptotic normality and consistency of {Kendall}'s test against
+  trend, when ties are present in one ranking.
+\newblock \emph{Indagationes Mathematicae}, 14\penalty0 (3):\penalty0 327--333,
+  1952.
+
+\bibitem[Tschandl et~al.(2018)Tschandl, Rosendahl, and
+  Kittler]{tschandl2018ham10000}
+Philipp Tschandl, Cliff Rosendahl, and Harald Kittler.
+\newblock The {HAM10000} dataset, a large collection of multi-source
+  dermatoscopic images of common pigmented skin lesions.
+\newblock \emph{Scientific Data}, 5:\penalty0 180161, 2018.
+
+\bibitem[Tzeng et~al.(2017)Tzeng, Hoffman, Saenko, and
+  Darrell]{tzeng2017adversarial}
+Eric Tzeng, Judy Hoffman, Kate Saenko, and Trevor Darrell.
+\newblock Adversarial discriminative domain adaptation.
+\newblock In \emph{Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition (CVPR)}, pp.\  7167--7176, 2017.
+
+\bibitem[Wang et~al.(2022)Wang, Li, Feng, and Zhang]{wang2022vim}
+Haoqi Wang, Zhizhong Li, Litong Feng, and Wayne Zhang.
+\newblock {ViM}: Out-of-distribution with virtual-logit matching.
+\newblock In \emph{Proceedings of the IEEE/CVF Conference on Computer Vision
+  and Pattern Recognition (CVPR)}, pp.\  4911--4920, 2022.
+\newblock \doi{10.1109/CVPR52688.2022.00487}.
+
+\bibitem[Winkler et~al.(2019)Winkler, Fink, Toberer, Enk, Deinlein,
+  Hofmann-Wellenhof, Thomas, Lallas, Blum, Stolz, and
+  Haenssle]{winkler2019association}
+Julia~K. Winkler, Christine Fink, Ferdinand Toberer, Alexander Enk, Teresa
+  Deinlein, Rainer Hofmann-Wellenhof, Luc Thomas, Aimilios Lallas, Andreas
+  Blum, Wilhelm Stolz, and Holger~A. Haenssle.
+\newblock Association between surgical skin markings in dermoscopic images and
+  diagnostic performance of a deep learning convolutional neural network for
+  melanoma recognition.
+\newblock \emph{JAMA Dermatology}, 155\penalty0 (10):\penalty0 1135--1141,
+  2019.
+
+\bibitem[Yan et~al.(2025)Yan, Yu, Primiero, Vico-Alonso, Wang, Yang, Tschandl,
+  Hu, Ju, Tan, Tang, Ng, Powell, Bonnington, See, Magnaterra, Ferguson, Nguyen,
+  Guitera, Banuls, Janda, Mar, Kittler, Soyer, and Ge]{yan2025panderm}
+Siyuan Yan, Zhen Yu, Clare Primiero, Cristina Vico-Alonso, Zhonghua Wang, Litao
+  Yang, Philipp Tschandl, Ming Hu, Lie Ju, Gin Tan, Vincent Tang, Aik~Beng Ng,
+  David Powell, Paul Bonnington, Simon See, Elisabetta Magnaterra, Peter
+  Ferguson, Jennifer Nguyen, Pascale Guitera, Jose Banuls, Monika Janda,
+  Victoria Mar, Harald Kittler, H.~Peter Soyer, and Zongyuan Ge.
+\newblock A multimodal vision foundation model for clinical dermatology.
+\newblock \emph{Nature Medicine}, 31\penalty0 (8):\penalty0 2691--2702, 2025.
+\newblock \doi{10.1038/s41591-025-03747-y}.
+
+\bibitem[Yang et~al.(2024)Yang, Zhou, Li, and Liu]{yang2024oodsurvey}
+Jingkang Yang, Kaiyang Zhou, Yixuan Li, and Ziwei Liu.
+\newblock Generalized out-of-distribution detection: A survey.
+\newblock \emph{International Journal of Computer Vision}, 132:\penalty0
+  5635--5662, 2024.
+
+\bibitem[Zech et~al.(2018)Zech, Badgeley, Liu, Costa, Titano, and
+  Oermann]{zech2018variable}
+John~R. Zech, Marcus~A. Badgeley, Manway Liu, Anthony~B. Costa, Joseph~J.
+  Titano, and Eric~Karl Oermann.
+\newblock Variable generalization performance of a deep learning model to
+  detect pneumonia in chest radiographs: A cross-sectional study.
+\newblock \emph{PLOS Medicine}, 15\penalty0 (11):\penalty0 e1002683, 2018.
+
+\end{thebibliography}

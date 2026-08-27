@@ -14,8 +14,10 @@ used.
 
 Two permutation designs are used in this paper and they are not
 interchangeable. Design~A is continuous--continuous (a geometry metric against
-Mahalanobis AUROC, $n = 13$, tie-free), and its exact null runs over all $13!$
-orderings. Design~B tests an ordinal dose against a value (a geometry metric,
+Mahalanobis AUROC, $n = 13$, tie-free), and its exact null distribution is
+defined over all $13!$ rank orderings and computed combinatorially; the
+implementation does not sequentially materialize 6.2 billion permutations.
+Design~B tests an ordinal dose against a value (a geometry metric,
 scorer AUROC, or probe AUROC against $\lambda_{\mathrm{orth}}$), where the dose
 is tied by construction and the exact null runs over the $72{,}072$ distinct
 label arrangements consistent with the 5/5/3 rung counts, or the $1{,}680$
@@ -55,13 +57,13 @@ $|\tau| = 0.3$ exclusion verdict, so no statement in this paper depends on the
 choice. Table~\ref{tab:tau-ci}
 reports the $\tau_b$ version.
 
-One case admits no valid interval. Where an observed $\tau$ attains the maximum
+One case does not receive a conventional two-sided BCa interval. Where an observed $\tau$ attains the maximum
 its design permits --- condition number against $\lambda_{\mathrm{orth}}$,
 $\tau = 0.840$ --- every resample lies at or below the observed value, the
-resampling distribution is one-sided by construction, and a nominal interval
-computed from it can fail even to contain its own point estimate. That case is
-reported as a point without an interval, and its exact permutation $p$-value is
-the meaningful inference.
+resampling distribution is one-sided and boundary-constrained by construction.
+A conventional two-sided BCa interval would therefore not have its usual
+interior-estimate interpretation. That case is reported as a point without such
+an interval, and its exact permutation $p$-value is the primary inference.
 
 \input{tables/table_tau_ci}
 
@@ -73,8 +75,8 @@ associations (exact permutation tests, $\alpha = 0.05$). (A) Power against the
 expected value of the reported statistic, for the three designs of
 Table~\ref{tab:power-design}; vertical dotted lines mark each design's
 $\tau_{\mathrm{crit}}$ and the dashed red line marks $|\tau| = 0.3$, the effect
-size fixed in the analysis plan (Section~\ref{sec:stats}). That value lies below
-every $\tau_{\mathrm{crit}}$, so the plan's conjunction of $|\tau| \geq 0.3$
+size used in the analysis criterion (Section~\ref{sec:stats}). That value lies below
+every $\tau_{\mathrm{crit}}$, so the criterion's conjunction of $|\tau| \geq 0.3$
 with significance at $\alpha = 0.05$ was unsatisfiable at these designs.
 (B) Observed Kendall's $\tau$ with 95\% BCa bootstrap intervals for all
 eighteen association tests reported in the paper. The shaded band spans

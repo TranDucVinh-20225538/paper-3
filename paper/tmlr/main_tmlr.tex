@@ -1,8 +1,8 @@
-\pdfoutput=1  % arXiv: force the pdflatex path (this document mixes .png and .pdf figures)
 \documentclass[10pt]{article} % For LaTeX2e
-\usepackage[preprint]{tmlr}
-% Preprint version: de-anonymized, no "Under review" banner, no
-% "Reviewed on OpenReview" line (that only appears under [accepted]).
+\usepackage{tmlr}
+% Double-blind TMLR submission: no class option, so tmlr.sty replaces the
+% author block with "Anonymous authors" and prints the "Under review" banner.
+% The \author block below is retained but never typeset in this mode.
 
 \input{math_commands.tex}
 
@@ -27,7 +27,7 @@
 
 \hypersetup{
   pdftitle={Decodable but Directionally Misaligned: Auditing Distance-Based OOD Ranking on Domain-Adversarial Skin-Lesion Representations},
-  pdfauthor={Duc-Vinh Tran, Quyet-Thang Huynh},
+  pdfauthor={Anonymous},
   pdfsubject={Machine Learning, Trustworthy AI, Out-of-Distribution Detection},
   pdfkeywords={out-of-distribution detection, reliability estimation, representation geometry, disentanglement, domain-adversarial training, Mahalanobis distance, probing classifiers, distribution shift, trustworthy machine learning}
 }
@@ -36,7 +36,7 @@
 
 \input{common_body}
 
-\input{declarations_arxiv}
+\input{declarations_anon}
 
 \bibliography{references}
 \bibliographystyle{tmlr}

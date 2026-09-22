@@ -44,3 +44,8 @@ paper/e2_distances.zip
 paper/supplementary_materials.zip
 paper/tmlr.zip
 paper/tmlr_full_for_review.zip
+
+# SNCS build artifacts (kept local until that submission is settled)
+paper/sncs/
+paper/sncs_submission.zip
+scripts/build_sncs.py

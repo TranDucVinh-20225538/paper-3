@@ -1,0 +1,4 @@
+metric,n_full,tau_full,p_full_exact,n_arrangements_full,n_common_seed,tau_common_seed,p_common_seed_exact,n_arrangements_common,sign_stable,passes_contract_threshold,probe
+domain_auroc,13,0.25954954703479516,0.3016983016983017,72072,9,0.28867513459481287,0.3880952380952381,1680,True,False,logistic_regression
+domain_auroc,13,0.25954954703479516,0.3016983016983017,72072,9,0.28867513459481287,0.3880952380952381,1680,True,False,linear_svm
+domain_auroc,13,-0.10687334289668037,0.700965700965701,72072,9,-0.28867513459481287,0.3880952380952381,1680,True,False,random_forest

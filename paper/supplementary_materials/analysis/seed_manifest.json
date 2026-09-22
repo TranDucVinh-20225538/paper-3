@@ -1,0 +1,14 @@
+{
+  "_note": "Values as actually used to produce every number in Appendix A. analyze_power_and_ci.py takes a single --seed and derives the two streams below from it.",
+  "cli_seed": 0,
+  "power_simulation_rng": 1,
+  "bca_bootstrap_rng": 7,
+  "n_simulations_per_grid_point": 20000,
+  "n_bootstrap_resamples": 20000,
+  "alpha": 0.05,
+  "power_grid_start": 0.0,
+  "power_grid_stop": 0.86,
+  "power_grid_step": 0.01,
+  "dose_coding": "ordinal rung index 0, 1, 2 -- not the lambda_orth values 0, 1, 5",
+  "command": "python3 analysis/analyze_power_and_ci.py --n-boot 20000 --n-sim 20000 --seed 0"
+}

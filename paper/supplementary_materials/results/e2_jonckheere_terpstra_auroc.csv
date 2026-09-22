@@ -1,0 +1,2 @@
+J,mean_J_null,z_normal_approx,p_normal_approx,p_exact,n_arrangements,outcome
+25.0,27.5,-0.3285021599088021,0.7425320114507434,0.6495171495171496,72072,auroc

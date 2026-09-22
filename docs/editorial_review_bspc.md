@@ -1,5 +1,13 @@
 # Editorial Review — Biomedical Signal Processing and Control (BSPC)
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 **Role**: senior corresponding author / associate editor pass. Read the full repository before writing anything below: `README.md`, `SPEC.md`, `REPOSITORY_MAP.md`, `CLAUDE.md`, all of `docs/` (`experiment_contract.md`, `open_questions.md`, `geometry_metric_audit.md`, `threats_to_validity.md`, `internal_review.md`, `fisher_ratio_defense.md`, `pipeline_readiness.md`, `environment_requirements.md`), every CSV in `results/`, the primary figures in `figures/`, and the analysis/extraction scripts that produced them.
 
 **Load-bearing fact this review opens with, because it changes what "review" means here**: **there is no manuscript.** `abstract.tex` (one paragraph, just drafted) is the only prose artifact resembling a submission. There is no Introduction, no Methods, no Results narrative, no Discussion, no bibliography, no figure captions written for a reader who hasn't lived inside this repository. What follows is therefore a review of *the underlying research package* — is the evidence real, is it sufficient, where would a BSPC reviewer attack — not a review of argumentation, framing, or prose, because none of that exists yet to review. Several of the 12 items below have to be answered as "not yet assessable" for exactly this reason, and I say so rather than inventing a verdict a manuscript hasn't earned yet.

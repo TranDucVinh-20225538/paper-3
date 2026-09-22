@@ -1,5 +1,13 @@
 # Discussion — LOCKED
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 Round 4 (final, one edit): "This is the paper's central claim, and it is deliberately narrower than either of the two explanations it rules out:" replaced with "Taken together, these findings indicate that" — removes the self-announcing "this is my contribution" framing; the reader doesn't need to be told a sentence is the central claim. No other changes. **Locked. Do not revise further.**
 
 # Discussion — Draft (Round 3)

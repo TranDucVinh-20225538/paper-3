@@ -1,5 +1,13 @@
 # Methods — LOCKED
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 Polished as a BSPC associate-editor pass on the prior draft: no new content beyond the explicitly requested `2.0 Overall study design` subsection, no logic or result changes, all technical detail preserved. Changes from the previous round: removed meta-commentary explaining *why* information is placed where it is (Methods should state facts, not narrate its own structure); collapsed repeated statements about `baseline_soft`'s role to one sentence; added a pre-specification statement to §2.3; tightened the multiple-comparisons sentence; tightened §2.5's probing-caveat sentence; added `2.0` as the missing pipeline overview. "Identical embeddings" is repeated deliberately across subsections and was not trimmed — the paper's entire evidentiary structure rests on same-embedding, different-scorer comparisons, and the repetition is load-bearing, not redundant.
 
 Placeholders in `[brackets]` mark citations or values needing a final source check before submission (dataset citation keys, backbone architecture name), not open decisions.

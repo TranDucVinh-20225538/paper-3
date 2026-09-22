@@ -1,5 +1,13 @@
 # Results — Draft
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 Written under one constraint, per direct instruction: **evidence only, in the order E1 → E2 → E2.5 → E2.6 → E2.7, no interpretation, no mechanism, no discussion.** Every subsection ends on a plain statement of what was measured, not what it means. All "why" is deferred to Discussion. Numbers are copied from `results/*.csv`; none are recomputed here.
 
 Table/figure numbering follows `manuscript_blueprint.md` §3–4 (Table 1 = ladder design, in Methods §2.2; Figures 2–6 as specified there).

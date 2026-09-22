@@ -1,5 +1,13 @@
 # Experiment Contract
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 **Purpose**: pre-registered Input / Output / Success / Failure for E1–E4, fixed *before* any experiment runs. Once an experiment executes, its outcome is read off against the criteria below — not re-argued afterward. If a criterion turns out to be wrong or ill-posed, that is a reason to amend this document explicitly (dated, with a stated reason), not to reinterpret a result to fit.
 
 **One global rule, stated once**: if an experiment's Input preconditions cannot be met (a checkpoint can't be resolved to a verified file, a required deduplication can't be confirmed, a required upstream script/file doesn't exist), the experiment is marked **BLOCKED**, never **FAILED**. Blocked says nothing about H3. Failed is evidence against it. Conflating the two misrepresents what was actually tested.

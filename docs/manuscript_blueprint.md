@@ -1,5 +1,13 @@
 # Manuscript Blueprint
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 **Purpose**: lock the complete manuscript design — title, storyline, figure/table order, per-section content, claim placement, and the reviewer-attack map with answers — *before* writing any Introduction/Methods/Results/Discussion prose. Per `editorial_review_bspc.md`'s scoring (Scientific quality 8.5/10, Novelty 7.5/10 conditional, Writing not yet assessable) and the working decision that followed it: this document is the thing that gets argued over and revised, not the manuscript itself. Once this is stable, writing should be closer to transcription than composition.
 
 **Framing decision this entire blueprint is built around** (the missed point from the editorial review): **this is an audit paper, not a Mahalanobis paper.** The Introduction's failure mode is opening with "Mahalanobis distance has limitations." The correct opening move is: distance-based reliability estimation implicitly assumes representation geometry reflects uncertainty; nobody has tested whether a representation-changing training intervention preserves that assumption; we audit it. Mahalanobis, cosine, and k-NN are the three instruments used to run the audit — none of them is the subject.

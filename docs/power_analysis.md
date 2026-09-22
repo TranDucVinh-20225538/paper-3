@@ -1,5 +1,13 @@
 # Power, detectability, and interval estimates for Paper 3's null results
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 **Script**: [`analysis/analyze_power_and_ci.py`](../analysis/analyze_power_and_ci.py)
 **Run**: `python3 analysis/analyze_power_and_ci.py --n-boot 20000 --n-sim 20000 --seed 0` (~55 s, CPU only)
 **Inputs**: existing `results/*.csv` only — no checkpoint is touched, nothing is retrained.

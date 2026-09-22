@@ -1,5 +1,13 @@
 # Figure Captions — Draft
 
+> **Note (2026-09-22).** This document predates two changes: the ladder growing
+> from 13 checkpoints to 15, and the re-extraction that corrected `runB` seeds
+> 42 and 62, which had come from a checkpoint that is not the
+> validation-accuracy maximum. Numbers below are the values as they stood then
+> and are kept as the record of what was observed at the time — they are not
+> the current results. For those see [`n13_vs_n15.md`](n13_vs_n15.md), or run
+> `python3 scripts/verify_claims.py` from the repository root.
+
 Written against `manuscript_blueprint.md` §3 (figure order) and the locked `results_draft.md`/`discussion_draft.md` numbers — nothing here introduces a new claim or number not already in the locked body text. Each caption: bold lead sentence (the takeaway, readable without the main text), then panel/axis description, then the specific statistic backing the takeaway.
 
 **Build status, so this isn't confused with "figures done"**: Figures 4 (`figure_e2_6_scorer_comparison.png`) exists as final. Figures 2, 3, 6 exist as source images but need trimming/recomposing per the blueprint's main-vs-supplementary split (full 5-metric panels → supplementary, condensed 1–2-panel versions → main text). Figures 1 (conceptual schematic) and 5 (the headline dumbbell plot) do not exist as image files yet — captions below are written to the locked spec so image-building can target them directly, not from a finished image.

@@ -12,8 +12,8 @@ models and still merge cleanly.
 
 Three checks run before any statistic, each stopping the script with the
 offending keys listed: no duplicate (rung, seed) within either file; no
-(rung, seed) present in both with differing checkpoint_path; exactly 13 rows
-surviving the merge (5 runA_grl + 5 runB_orth1 + 3 runB).
+(rung, seed) present in both with differing checkpoint_path; every checkpoint
+measured on both sides surviving the merge.
 
 Then computes Kendall's tau per geometry metric against AUROC, Jonckheere-
 Terpstra for AUROC against rung order, Table 2 and Figure 2. Both variables
@@ -92,15 +92,18 @@ def load_and_merge(e1_path: Path, e2_path: Path) -> pd.DataFrame:
     if only_e2:
         print(f"[analyze_e2] (rung, seed) in {e2_path.name} but missing from {e1_path.name}: {sorted(only_e2)}")
 
-    if len(merged) != 13:
+    # The gate is that the two sides agree, not that they total some fixed
+    # number: a hardcoded 13 turned a grown ladder into a FATAL. What must
+    # never pass is a checkpoint measured on one side only.
+    if only_e1 or only_e2 or len(merged) != len(e1_keys):
         raise SystemExit(
-            f"FATAL: expected exactly 13 merged rows (5 runA_grl + 5 runB_orth1 + 3 runB), got {len(merged)}. "
-            "See the missing-key lines above for which checkpoints are absent from one side. Stopping -- "
+            f"FATAL: {e1_path.name} has {len(e1_keys)} checkpoints, {e2_path.name} has {len(e2_keys)}, "
+            f"{len(merged)} survived the merge. See the missing-key lines above. Stopping -- "
             "not analyzing a partial ladder."
         )
 
     merged["rung_index"] = merged["rung"].map(RUNG_INDEX)
-    print(f"[analyze_e2] Merge validated: 13/13 rows, checkpoint_path identical between "
+    print(f"[analyze_e2] Merge validated: {len(merged)}/{len(e1_keys)} rows, checkpoint_path identical between "
           f"{e1_path.name} and {e2_path.name} for every (rung, seed).\n")
     return merged
 
@@ -216,13 +219,22 @@ def main():
         )
     pd.DataFrame(tau_results).to_csv(out_dir / "e2_kendall_tau.csv", index=False)
 
-    contract_pass_metrics = [
-        r["metric"] for r in tau_results
-        if r["metric"] in CONTRACT_METRICS and abs(r["tau"]) >= CONTRACT_TAU_THRESHOLD
-    ]
-    print(f"\n[experiment_contract.md E2a] |tau|>={CONTRACT_TAU_THRESHOLD} met by: {contract_pass_metrics or 'NONE'}")
+    # The criterion has two halves -- |tau| >= threshold AND significant -- and
+    # this only ever applied the first. Harmless while no metric reached 0.3;
+    # at n=15 fisher_ratio_HL reaches |tau|=0.314 with p=0.11, which flipped the
+    # printed verdict to SUCCESS without any conclusion changing. Both halves
+    # are applied here, matching analyze_e1.kendall_trend and the manuscript.
+    CONTRACT_ALPHA = 0.05
+    size_met = [r["metric"] for r in tau_results
+                if r["metric"] in CONTRACT_METRICS and abs(r["tau"]) >= CONTRACT_TAU_THRESHOLD]
+    contract_pass_metrics = [r["metric"] for r in tau_results
+                             if r["metric"] in CONTRACT_METRICS
+                             and abs(r["tau"]) >= CONTRACT_TAU_THRESHOLD
+                             and r["p_exact"] <= CONTRACT_ALPHA]
+    print(f"\n[experiment_contract.md E2a] |tau|>={CONTRACT_TAU_THRESHOLD} met by: {size_met or 'NONE'}")
+    print(f"[experiment_contract.md E2a] and also p<={CONTRACT_ALPHA}: {contract_pass_metrics or 'NONE'}")
     print(f"[experiment_contract.md E2a] Verdict: {'SUCCESS' if contract_pass_metrics else 'FAILURE'} "
-          f"(mechanically applying the pre-registered criterion, not re-argued here)")
+          f"(both halves of the pre-registered criterion, not re-argued here)")
 
     # ---- Jonckheere-Terpstra on AUROC itself, across the ordered ladder ----
     print("\n=== Jonckheere-Terpstra: does AUROC itself trend across the ladder? ===")

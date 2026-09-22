@@ -4,7 +4,7 @@
 \centering
 \caption{Every Kendall's $\tau$ reported in this paper with a 95\% bootstrap
 confidence interval ($2\times10^{4}$ stratified resamples, bias-corrected and
-accelerated; resampling is within-rung, so the 5/5/3 design is held fixed).
+accelerated; resampling is within-rung, so the 5/5/5 design is held fixed).
 ``Largest $|\tau|$ not excluded'' is the interval endpoint furthest from zero:
 the effect size each non-significant result still permits.}
 \label{tab:tau-ci}
@@ -15,33 +15,33 @@ Test & $\tau$ & 95\% CI & Largest $|\tau|$ not excluded \\
 \midrule
 \multicolumn{4}{l}{\emph{Geometry metric vs.\ $\lambda_{\mathrm{orth}}$ (Section~\ref{sec:geometry-changes})}} \\
 \addlinespace[0.15em]
-\quad Condition number & $\phantom{-}0.840$ & \multicolumn{2}{c}{at design ceiling --- see note} \\
-\quad Fisher ratio (Hotelling--Lawley) & $\phantom{-}0.168$ & $[-0.461,\ \phantom{-}0.620]$ & 0.62 \\
-\quad Fisher ratio (decoupled scalar) & $\phantom{-}0.076$ & $[-0.532,\ \phantom{-}0.532]$ & 0.53 \\
-\quad Mardia's kurtosis ($b$) & $-0.137$ & $[-0.400,\ \phantom{-}0.206]$ & 0.40 \\
-\quad Mardia's kurtosis ($z$) & $-0.168$ & $[-0.412,\ \phantom{-}0.174]$ & 0.41 \\
+\quad Condition number & $\phantom{-}0.845$ & \multicolumn{2}{c}{at design ceiling --- see note} \\
+\quad Fisher ratio (Hotelling--Lawley) & $\phantom{-}0.101$ & $[-0.455,\ \phantom{-}0.528]$ & 0.53 \\
+\quad Fisher ratio (decoupled scalar) & $\phantom{-}0.056$ & $[-0.476,\ \phantom{-}0.499]$ & 0.50 \\
+\quad Mardia's kurtosis ($b$) & $\phantom{-}0.056$ & $[-0.312,\ \phantom{-}0.387]$ & 0.39 \\
+\quad Mardia's kurtosis ($z$) & $\phantom{-}0.034$ & $[-0.317,\ \phantom{-}0.383]$ & 0.38 \\
 \addlinespace
 \multicolumn{4}{l}{\emph{Geometry metric vs.\ Mahalanobis AUROC (Section~\ref{sec:geometry-auroc})}} \\
 \addlinespace[0.15em]
-\quad Condition number & $-0.128$ & $[-0.507,\ \phantom{-}0.200]$ & 0.51 \\
-\quad Fisher ratio (Hotelling--Lawley) & $-0.282$ & $[-0.750,\ \phantom{-}0.183]$ & 0.75 \\
-\quad Fisher ratio (decoupled scalar) & $-0.154$ & $[-0.611,\ \phantom{-}0.324]$ & 0.61 \\
-\quad Mardia's kurtosis ($b$) & $-0.128$ & $[-0.500,\ \phantom{-}0.233]$ & 0.50 \\
-\quad Mardia's kurtosis ($z$) & $-0.128$ & $[-0.534,\ \phantom{-}0.216]$ & 0.53 \\
+\quad Condition number & $\phantom{-}0.010$ & $[-0.355,\ \phantom{-}0.374]$ & 0.37 \\
+\quad Fisher ratio (Hotelling--Lawley) & $-0.314$ & $[-0.747,\ \phantom{-}0.146]$ & 0.75 \\
+\quad Fisher ratio (decoupled scalar) & $-0.200$ & $[-0.646,\ \phantom{-}0.260]$ & 0.65 \\
+\quad Mardia's kurtosis ($b$) & $-0.029$ & $[-0.402,\ \phantom{-}0.340]$ & 0.40 \\
+\quad Mardia's kurtosis ($z$) & $-0.029$ & $[-0.402,\ \phantom{-}0.333]$ & 0.40 \\
 \addlinespace
 \multicolumn{4}{l}{\emph{Directed scorer AUROC vs.\ $\lambda_{\mathrm{orth}}$ (Section~\ref{sec:generalizes})}} \\
 \addlinespace[0.15em]
-\quad Mahalanobis & $-0.076$ & $[-0.524,\ \phantom{-}0.432]$ & 0.52 \\
-\quad Cosine-to-centroid & $\phantom{-}0.321$ & $[-0.210,\ \phantom{-}0.688]$ & 0.69 \\
-\quad $k$-NN ($k=1$) & $-0.046$ & $[-0.500,\ \phantom{-}0.556]$ & 0.56 \\
-\quad $k$-NN ($k=10$) & $\phantom{-}0.015$ & $[-0.564,\ \phantom{-}0.489]$ & 0.56 \\
-\quad $k$-NN ($k=50$) & $\phantom{-}0.076$ & $[-0.524,\ \phantom{-}0.545]$ & 0.55 \\
+\quad Mahalanobis & $\phantom{-}0.034$ & $[-0.473,\ \phantom{-}0.465]$ & 0.47 \\
+\quad Cosine-to-centroid & $\phantom{-}0.417$ & $[-0.012,\ \phantom{-}0.712]$ & 0.71 \\
+\quad $k$-NN ($k=1$) & $-0.011$ & $[-0.471,\ \phantom{-}0.512]$ & 0.51 \\
+\quad $k$-NN ($k=10$) & $\phantom{-}0.034$ & $[-0.499,\ \phantom{-}0.483]$ & 0.50 \\
+\quad $k$-NN ($k=50$) & $\phantom{-}0.146$ & $[-0.387,\ \phantom{-}0.566]$ & 0.57 \\
 \addlinespace
 \multicolumn{4}{l}{\emph{Domain-probe AUROC vs.\ $\lambda_{\mathrm{orth}}$ (Section~\ref{sec:decodable})}} \\
 \addlinespace[0.15em]
-\quad Logistic regression & $\phantom{-}0.260$ & $[-0.210,\ \phantom{-}0.656]$ & 0.66 \\
-\quad Linear SVM & $\phantom{-}0.260$ & $[-0.210,\ \phantom{-}0.656]$ & 0.66 \\
-\quad Random forest & $-0.107$ & $[-0.560,\ \phantom{-}0.368]$ & 0.56 \\
+\quad Logistic regression & $\phantom{-}0.237$ & $[-0.241,\ \phantom{-}0.621]$ & 0.62 \\
+\quad Linear SVM & $\phantom{-}0.259$ & $[-0.204,\ \phantom{-}0.628]$ & 0.63 \\
+\quad Random forest & $\phantom{-}0.011$ & $[-0.434,\ \phantom{-}0.415]$ & 0.43 \\
 \bottomrule
 \end{tabular}
 
@@ -50,12 +50,11 @@ Test & $\tau$ & 95\% CI & Largest $|\tau|$ not excluded \\
 % undo the \centering of the enclosing table, so the note sets as a paragraph
 \leftskip=0pt \rightskip=0pt \parfillskip=0pt plus 1fil
 \small \emph{Note.} Condition number vs.\ $\lambda_{\mathrm{orth}}$ attains
-$\tau = 0.840$, the maximum value the 5/5/3 design permits (a perfectly monotone
+$\tau = 0.845$, the maximum value the 5/5/5 design permits (a perfectly monotone
 ladder). Every bootstrap resample therefore lies at or below the observed value,
-and the resampling distribution is one-sided and boundary-constrained by
-construction. A conventional two-sided BCa interval is therefore not reported;
-the exact permutation $p$-value ($2.8\times10^{-5}$) is the primary inference
-for that effect. Of the seventeen non-significant
+the resampling distribution is one-sided by construction, and no bootstrap
+interval is valid; the exact permutation $p$-value ($p = 2.6 \times 10^{-6}$) is the
+meaningful inference for that effect. Of the seventeen non-significant
 associations, none has an interval that excludes $|\tau| = 0.3$.
 \end{minipage}
 \end{table}

@@ -1,0 +1,37 @@
+{
+  "n_runs": 2,
+  "weight_key": "model.lesion_classifier.weight",
+  "bias_key": "model.lesion_classifier.bias",
+  "npz_path": "/data2/hpcshared/Vinh-/paper-3/results/lesion_classifier_heads_new.npz",
+  "npz_sha256": "4bc65db0ba3183f6ad2fd62e219ec2257264ca942f517a6cd8eede03e215160f",
+  "npz_nbytes": 1929,
+  "torch": "2.1.1",
+  "runs": [
+    {
+      "run_name": "runB_s72",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s72/best-35.ckpt",
+      "checkpoint_sha256": "3d4dd551e24ba83e3b24026955b126de7f7c59eeb20fab6c9858dd30fe99c3a1",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 35
+    },
+    {
+      "run_name": "runB_s82",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s82/best-34.ckpt",
+      "checkpoint_sha256": "490c3febf068ebdd5c10b6a97dc069beb3b133d3a84788d02a5860546fee0efa",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 34
+    }
+  ]
+}

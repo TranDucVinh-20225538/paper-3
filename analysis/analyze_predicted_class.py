@@ -120,9 +120,6 @@ def main():
 
     npz_dir = Path(args.npz_dir)
     manifest = discover_checkpoints(npz_dir)
-    if len(manifest) != 13:
-        print(f"[analyze_predicted_class] WARNING: found {len(manifest)} checkpoints in {npz_dir}, expected 13. "
-              "Proceeding with what's available.")
 
     table = per_checkpoint_table(npz_dir, manifest)
     out_dir = Path(args.output_dir)

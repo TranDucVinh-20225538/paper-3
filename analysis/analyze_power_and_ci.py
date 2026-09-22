@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import itertools
+import sys
 from math import comb, sqrt
 from pathlib import Path
 
@@ -47,7 +48,6 @@ from scipy.optimize import brentq
 from scipy.stats import kendalltau, norm
 
 from analyze_e1 import (
-    COMMON_SEEDS,
     CONTRACT_TAU_THRESHOLD,
     METRICS,
     PRIMARY_RUNGS,
@@ -531,18 +531,27 @@ def jt_conventions(tests: list[dict], nulls: dict) -> pd.DataFrame:
 
 # ---- Figure ----
 
-DESIGN_STYLE = {
-    "A (n=13, continuous-continuous)": ("tab:blue", "-"),
-    "B (5/5/3 ladder, n=13)": ("tab:orange", "-"),
-    "B (3/3/3 common-seed, n=9)": ("tab:green", "--"),
-}
+# Styles are assigned by position within kind rather than by a name that
+# encodes the ladder size, so the figure survives a change of inventory.
+DESIGN_STYLE_BY_KIND = {"A": [("tab:blue", "-")],
+                        "B": [("tab:orange", "-"), ("tab:green", "--")]}
+
+
+def styled_designs(summary: pd.DataFrame):
+    """(design name, colour, linestyle) in a stable order, read from summary."""
+    out = []
+    for kind, styles in DESIGN_STYLE_BY_KIND.items():
+        rows = summary[summary["design_kind"] == kind].sort_values("n", ascending=False)
+        for i, (_, r) in enumerate(rows.iterrows()):
+            out.append((str(r["design"]), *styles[min(i, len(styles) - 1)]))
+    return out
 
 
 def make_power_figure(curve: pd.DataFrame, summary: pd.DataFrame, ci: pd.DataFrame, out_dir: Path) -> None:
     fig, (ax_pow, ax_ci) = plt.subplots(1, 2, figsize=(13.5, 6.0), gridspec_kw={"width_ratios": [1.0, 1.15]})
 
     # --- (A) power curves -------------------------------------------------
-    for design, (color, ls) in DESIGN_STYLE.items():
+    for design, color, ls in styled_designs(summary):
         sub = curve[curve["design"] == design].sort_values("expected_tau")
         if not len(sub):
             continue
@@ -559,7 +568,7 @@ def make_power_figure(curve: pd.DataFrame, summary: pd.DataFrame, ci: pd.DataFra
     ax_pow.text(0.855, 0.815, "80% power", color="gray", fontsize=8, ha="right")
 
     ann = []
-    for design in DESIGN_STYLE:
+    for design, _c, _ls in styled_designs(summary):
         row = summary[summary["design"] == design]
         if len(row):
             r = row.iloc[0]
@@ -596,8 +605,9 @@ def make_power_figure(curve: pd.DataFrame, summary: pd.DataFrame, ci: pd.DataFra
         ax_ci.plot([row["ci_lo"], row["ci_hi"]], [k, k], color=c, lw=1.8, alpha=0.85, solid_capstyle="butt")
         ax_ci.plot(row["tau"], k, "o", color=c, ms=5)
 
-    crit_A = float(summary[summary["design"] == "A (n=13, continuous-continuous)"].iloc[0]["tau_crit"])
-    crit_B = float(summary[summary["design"] == "B (5/5/3 ladder, n=13)"].iloc[0]["tau_crit"])
+    # Keyed on design_kind, not on a name string that encodes the ladder size.
+    crit_A = float(summary[summary["design_kind"] == "A"].iloc[0]["tau_crit"])
+    crit_B = float(summary[summary["design_kind"] == "B"].sort_values("n", ascending=False).iloc[0]["tau_crit"])
     ax_ci.axvspan(-crit_B, crit_B, color="crimson", alpha=0.055, zorder=0)
     for c in (-crit_B, crit_B):
         ax_ci.axvline(c, color="crimson", lw=1.0, ls="--", alpha=0.7, zorder=1)
@@ -659,18 +669,32 @@ def main() -> None:
     print("[power] tau_b <-> Jonckheere-J identity verified on every Design-B test's real data.\n")
 
     # ---- design-level critical values and power curves -------------------
-    designs = {
-        "A (n=13, continuous-continuous)": {"kind": "A", "n": n_A, "null_taus": None},
-        "B (5/5/3 ladder, n=13)": {"kind": "B", "sizes": (5, 5, 3)},
-        "B (3/3/3 common-seed, n=9)": {"kind": "B", "sizes": (3, 3, 3)},
-    }
+    # Design inventory follows the data. These were hardcoded to (5,5,3) and
+    # (3,3,3), which silently produced the wrong exact null the moment the rung
+    # inventory changed -- the rows would still be written, just against the
+    # wrong reference distribution. The common-seed row is emitted only when it
+    # differs from the full ladder; once every rung carries every seed the two
+    # coincide and a separate row would be the same numbers twice.
+    b_sizes = sorted({tuple(t["group_sizes"]) for t in tests if t["design"] == "B"},
+                     key=lambda z: -sum(z))
+    if not b_sizes:
+        sys.exit("DỪNG: không có phép kiểm Design-B nào để suy ra kích thước nhóm.")
+    designs = {f"A (n={n_A}, continuous-continuous)": {"kind": "A", "n": n_A, "null_taus": None}}
+    for sizes in b_sizes:
+        designs[f"B ({'/'.join(map(str, sizes))} ladder, n={sum(sizes)})"] = {
+            "kind": "B", "sizes": sizes}
+    common = tuple(min(sizes) for sizes in [b_sizes[0]]) * len(b_sizes[0])
+    if common != b_sizes[0]:
+        designs[f"B ({'/'.join(map(str, common))} common-seed, n={sum(common)})"] = {
+            "kind": "B", "sizes": common}
+    print("[power] thiết kế suy ra từ dữ liệu: " + ", ".join(designs) + "\n")
     tau_grid = np.round(np.arange(0.0, 0.861, 0.01), 4)
     curve_rows, summary_rows = [], []
 
     for name, spec in designs.items():
         if spec["kind"] == "A":
             tau_crit, p_crit = critical_tau_untied(null_A)
-            max_tau, n_arr, n_here, sizes_str = 1.0, "13! orderings", n_A, "-"
+            max_tau, n_arr, n_here, sizes_str = 1.0, f"{n_A}! orderings", n_A, "-"
             usable = tau_grid[tau_grid < 0.999]
             power = power_curve_untied(n_A, usable, tau_crit, args.n_sim,
                                        np.random.default_rng(args.seed + 1))
@@ -695,7 +719,8 @@ def main() -> None:
             return float(np.interp(target, usable, power))
 
         summary_rows.append({
-            "design": name, "n": n_here, "group_sizes": sizes_str, "null_space": n_arr,
+            "design": name, "design_kind": spec["kind"], "n": n_here,
+            "group_sizes": sizes_str, "null_space": n_arr,
             "max_attainable_abs_tau": float(max_tau),
             "tau_crit": tau_crit, "p_at_tau_crit": p_crit,
             "contract_threshold_0.3_attainable": bool(np.isfinite(tau_crit) and tau_crit <= CONTRACT_TAU_THRESHOLD),
@@ -722,8 +747,8 @@ def main() -> None:
         else:
             boot = bootstrap_tau_pairs(t["x"], t["y"], t["strata"], args.n_boot, np.random.default_rng(args.seed + 7))
             p_exact = exact_p_untied(boot["tau"], null_A)
-            design_name = "A (n=13, continuous-continuous)"
-            row = summary[summary["design"] == design_name].iloc[0]
+            row = summary[summary["design_kind"] == "A"].iloc[0]
+            design_name = str(row["design"])
         tau_crit = float(row["tau_crit"])
         max_tau = float(row["max_attainable_abs_tau"])
         at_ceiling = bool(abs(boot["tau"]) >= max_tau - 1e-9)

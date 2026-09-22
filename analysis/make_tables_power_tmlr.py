@@ -46,16 +46,31 @@ GROUPS = [
     ]),
 ]
 
-DESIGN_ROW = {
-    "A (n=13, continuous-continuous)": (r"A: continuous--continuous", r"$13!$"),
-    "B (5/5/3 ladder, n=13)": (r"B: 5/5/3 ordered ladder", "72,072"),
-    "B (3/3/3 common-seed, n=9)": (r"B: 3/3/3 common-seed subset", "1,680"),
-}
+WORDS = {1:"one",2:"two",3:"three",4:"four",5:"five",6:"six",7:"seven",8:"eight",
+         9:"nine",10:"ten",11:"eleven",12:"twelve",13:"thirteen",14:"fourteen",
+         15:"fifteen",16:"sixteen",17:"seventeen",18:"eighteen",19:"nineteen",20:"twenty"}
+
+
+def design_rows(summary):
+    """(label, null-space) per design, read from the summary rather than declared.
+
+    Was a dict keyed on names carrying the ladder size, which went stale the
+    moment runB gained two seeds -- and would have raised rather than quietly
+    mislabelled, but only after the whole analysis had rerun.
+    """
+    out = []
+    for kind in ("A", "B"):
+        rows = summary[summary["design_kind"] == kind].sort_values("n", ascending=False)
+        for _, r in rows.iterrows():
+            label = (r"A: continuous--continuous" if kind == "A"
+                     else f"B: {r['group_sizes']} ordered ladder")
+            out.append((str(r["design"]), label, str(r["null_space"])))
+    return out
 
 
 def design_table(summary: pd.DataFrame) -> str:
     rows = []
-    for design, (label, null_space) in DESIGN_ROW.items():
+    for design, label, null_space in design_rows(summary):
         r = summary[summary["design"] == design].iloc[0]
         rows.append(
             f"{label} & {int(r['n'])} & {null_space} & {r['max_attainable_abs_tau']:.3f} & "
@@ -97,6 +112,16 @@ Design & $n$ & space & $|\tau|$ & $\tau_{{\mathrm{{crit}}}}$ & $\tau=0.3$ & $\ta
 
 
 def ci_table(ci: pd.DataFrame) -> str:
+    reported_keys = {(fam, t) for _, fam, tests in GROUPS for t, _ in tests}
+    reported = ci[[k in reported_keys for k in zip(ci["family"], ci["test"])]]
+    ceil_row = reported[reported["at_design_ceiling"]].iloc[0]
+    ceiling = float(ceil_row["tau"])
+    mant, exp = f"{float(ceil_row['p_exact']):.1e}".split("e")
+    ceiling_p = rf"$p = {mant} \times 10^{{{int(exp)}}}$"
+    ladder = str(ceil_row["design"]).split("(")[1].split(" ")[0]
+    nonsig = reported[~reported["at_design_ceiling"]]
+    n_nonsig = len(nonsig)
+    n_nonsig_word = WORDS.get(n_nonsig, str(n_nonsig))
     idx = ci.set_index(["family", "test"])
     rows = []
     for gi, (heading, family, tests) in enumerate(GROUPS):
@@ -120,7 +145,7 @@ def ci_table(ci: pd.DataFrame) -> str:
 \centering
 \caption{{Every Kendall's $\tau$ reported in this paper with a 95\% bootstrap
 confidence interval ($2\times10^{{4}}$ stratified resamples, bias-corrected and
-accelerated; resampling is within-rung, so the 5/5/3 design is held fixed).
+accelerated; resampling is within-rung, so the {ladder} design is held fixed).
 ``Largest $|\tau|$ not excluded'' is the interval endpoint furthest from zero:
 the effect size each non-significant result still permits.}}
 \label{{tab:tau-ci}}
@@ -138,11 +163,11 @@ Test & $\tau$ & 95\% CI & Largest $|\tau|$ not excluded \\
 % undo the \centering of the enclosing table, so the note sets as a paragraph
 \leftskip=0pt \rightskip=0pt \parfillskip=0pt plus 1fil
 \small \emph{{Note.}} Condition number vs.\ $\lambda_{{\mathrm{{orth}}}}$ attains
-$\tau = 0.840$, the maximum value the 5/5/3 design permits (a perfectly monotone
+$\tau = {ceiling:.3f}$, the maximum value the {ladder} design permits (a perfectly monotone
 ladder). Every bootstrap resample therefore lies at or below the observed value,
 the resampling distribution is one-sided by construction, and no bootstrap
-interval is valid; the exact permutation $p$-value ($2.8\times10^{{-5}}$) is the
-meaningful inference for that effect. Of the seventeen non-significant
+interval is valid; the exact permutation $p$-value ({ceiling_p}) is the
+meaningful inference for that effect. Of the {n_nonsig_word} non-significant
 associations, none has an interval that excludes $|\tau| = 0.3$.
 \end{{minipage}}
 \end{{table}}

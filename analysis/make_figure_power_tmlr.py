@@ -62,11 +62,23 @@ GROUP_LABEL = {
 }
 GROUP_COLOR = {"E1": "tab:purple", "E2": "tab:blue", "E2.6": "tab:orange", "E2.7": "tab:green"}
 
-DESIGN_STYLE = {
-    "A (n=13, continuous-continuous)": ("tab:blue", "-", "A: continuous--continuous, $n=13$"),
-    "B (5/5/3 ladder, n=13)": ("tab:orange", "-", "B: 5/5/3 ordered ladder, $n=13$"),
-    "B (3/3/3 common-seed, n=9)": ("tab:green", "--", "B: 3/3/3 common-seed subset, $n=9$"),
-}
+# Built from the summary rather than keyed on a name that encodes the ladder
+# size, so a change of checkpoint inventory does not silently drop a curve.
+STYLES = {"A": [("tab:blue", "-")], "B": [("tab:orange", "-"), ("tab:green", "--")]}
+
+
+def design_style(summary):
+    """{design name: (colour, linestyle, legend label)} in a stable order."""
+    out = {}
+    for kind, styles in STYLES.items():
+        rows = summary[summary["design_kind"] == kind].sort_values("n", ascending=False)
+        for i, (_, r) in enumerate(rows.iterrows()):
+            colour, ls = styles[min(i, len(styles) - 1)]
+            sizes = str(r["group_sizes"])
+            label = (f"A: continuous--continuous, $n={int(r['n'])}$" if kind == "A"
+                     else f"B: {sizes} ordered ladder, $n={int(r['n'])}$")
+            out[str(r["design"])] = (colour, ls, label)
+    return out
 
 
 def main() -> None:
@@ -97,7 +109,7 @@ def main() -> None:
     )
 
     # (A) power curves ----------------------------------------------------
-    for design, (color, ls, label) in DESIGN_STYLE.items():
+    for design, (color, ls, label) in design_style(summary).items():
         sub = curve[curve["design"] == design].sort_values("expected_tau")
         ax_pow.plot(sub["expected_tau"], sub["power"], color=color, ls=ls, lw=2, label=label)
         crit = float(summary[summary["design"] == design].iloc[0]["tau_crit"])
@@ -111,7 +123,7 @@ def main() -> None:
     ax_pow.text(0.855, 0.818, "80% power", color="gray", fontsize=8.5, ha="right")
 
     ann = []
-    for design, (_, _, label) in DESIGN_STYLE.items():
+    for design, (_, _, label) in design_style(summary).items():
         r = summary[summary["design"] == design].iloc[0]
         ann.append(f"{label}\n"
                    f"   power at $\\tau=0.3$: {r['power_at_tau_0.3']:.2f}"
@@ -143,8 +155,9 @@ def main() -> None:
                    alpha=0.85, solid_capstyle="butt")
         ax_ci.plot(row["tau"], k, "o", color=c, ms=5)
 
-    crit_a = float(summary[summary["design"] == "A (n=13, continuous-continuous)"].iloc[0]["tau_crit"])
-    crit_b = float(summary[summary["design"] == "B (5/5/3 ladder, n=13)"].iloc[0]["tau_crit"])
+    crit_a = float(summary[summary["design_kind"] == "A"].iloc[0]["tau_crit"])
+    crit_b = float(summary[summary["design_kind"] == "B"].sort_values("n", ascending=False)
+                   .iloc[0]["tau_crit"])
     ax_ci.axvspan(-crit_b, crit_b, color="crimson", alpha=0.055, zorder=0)
     for c in (-crit_b, crit_b):
         ax_ci.axvline(c, color="crimson", lw=1.0, ls="--", alpha=0.7, zorder=1)

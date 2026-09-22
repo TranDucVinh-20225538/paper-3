@@ -40,7 +40,6 @@ from sklearn.svm import LinearSVC
 
 from analyze_e1 import PRIMARY_RUNGS, RUNG_INDEX, RUNG_LAMBDA, kendall_trend
 
-RUNG_SEEDS = {"runA_grl": {42, 52, 62, 72, 82}, "runB_orth1": {42, 52, 62, 72, 82}, "runB": {42, 52, 62}}
 N_FOLDS = 5
 CV_SEED = 0
 
@@ -80,14 +79,28 @@ def load_z(npz_dir: Path, rung: str, seed: int) -> tuple[np.ndarray, np.ndarray]
     return data["z_id"], data["z_ood"]
 
 
-def check_inputs_present(npz_dir: Path) -> None:
+def ladder_inventory(results_dir: Path) -> dict:
+    """Which ladder checkpoints this analysis is expected to cover.
+
+    Read from the geometry table rather than declared here, so the probe set
+    follows the checkpoint pool instead of a constant that has to be edited
+    whenever a seed is added. The completeness check below is unchanged: every
+    checkpoint the ladder analysis used must have its embeddings on disk.
+    """
+    e1 = pd.read_csv(results_dir / "e1_geometry_metrics.csv")
+    e1 = e1[e1["rung"].isin(PRIMARY_RUNGS)]
+    return {r: set(g["seed"]) for r, g in e1.groupby("rung")}
+
+
+def check_inputs_present(npz_dir: Path, inventory: dict) -> None:
+    n_expected = sum(len(v) for v in inventory.values())
     missing = [
-        (rung, seed) for rung, seeds in RUNG_SEEDS.items() for seed in seeds
+        (rung, seed) for rung, seeds in inventory.items() for seed in seeds
         if not (npz_dir / f"{rung}_s{seed}_z.npz").is_file()
     ]
     if missing:
         raise SystemExit(
-            f"FATAL: {len(missing)}/13 raw-embedding files missing from {npz_dir} "
+            f"FATAL: {len(missing)}/{n_expected} raw-embedding files missing from {npz_dir} "
             f"(expected '{{rung}}_s{{seed}}_z.npz', written by extract_auroc_e2.py's "
             "save_raw_embeddings -- see experiment_contract.md E2.7's Input section):\n"
             + "\n".join(f"  {rung}_s{seed}_z.npz" for rung, seed in sorted(missing))
@@ -102,7 +115,7 @@ def discover_baseline_seeds(npz_dir: Path) -> list[int]:
     never part of the primary ladder's ordinal trend -- auto-discovered from whichever
     baseline_soft_s{seed}_z.npz files happen to be present (as few as one checkpoint is enough to
     know the direction, per the user's own scoping for this comparison), rather than hardcoding an
-    expected seed set the way RUNG_SEEDS does for the primary ladder.
+    expected seed set the way the primary-ladder inventory does.
     """
     seeds = []
     for path in sorted(npz_dir.glob("baseline_soft_s*_z.npz")):
@@ -120,11 +133,12 @@ def main():
     args = parser.parse_args()
 
     npz_dir = Path(args.npz_dir)
-    check_inputs_present(npz_dir)
+    inventory = ladder_inventory(npz_dir.parent)
+    check_inputs_present(npz_dir, inventory)
 
     probes = make_probes()
     rows = []
-    for rung, seeds in RUNG_SEEDS.items():
+    for rung, seeds in inventory.items():
         for seed in sorted(seeds):
             z_id, z_ood = load_z(npz_dir, rung, seed)
             for probe_name, probe in probes.items():

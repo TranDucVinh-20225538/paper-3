@@ -12,5 +12,3 @@ runB_orth1,csg,82,../checkpoints/csg_lite/runB_orth1_s82/best-37.ckpt,0.40269148
 runB,csg,42,../checkpoints/csg_lite/runB_s42/best-31.ckpt,0.4004127974952864,0.9818432997829092
 runB,csg,52,../checkpoints/csg_lite/runB_s52/best-28.ckpt,0.4143946315198791,0.9848036313400436
 runB,csg,62,../checkpoints/csg_lite/runB_s62/best-28.ckpt,0.3652292955853701,0.9883560292086048
-runB,csg,72,/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s72/best-35.ckpt,0.4374578215017117,0.9899348727057432
-runB,csg,82,/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s82/best-34.ckpt,0.4058684987572103,0.9601342016972568

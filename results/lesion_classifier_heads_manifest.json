@@ -1,0 +1,427 @@
+{
+  "n_runs": 13,
+  "expected_runs": [
+    "runA_grl_s42",
+    "runA_grl_s52",
+    "runA_grl_s62",
+    "runA_grl_s72",
+    "runA_grl_s82",
+    "runB_orth1_s42",
+    "runB_orth1_s52",
+    "runB_orth1_s62",
+    "runB_orth1_s72",
+    "runB_orth1_s82",
+    "runB_s42",
+    "runB_s52",
+    "runB_s62"
+  ],
+  "weight_key": "model.lesion_classifier.weight",
+  "bias_key": "model.lesion_classifier.bias",
+  "npz_path": "/data2/hpcshared/Vinh-/paper-3/results/lesion_classifier_heads.npz",
+  "npz_sha256": "52b6655eb64dfc4ea586d852b7569662367ad22d0f0607fea042449a887d6522",
+  "npz_nbytes": 12618,
+  "intended_path_under_frozen_paper3": "/data2/hpcshared/Vinh/CSG-Skin/paper-3/results/lesion_classifier_heads.npz",
+  "write_note": "CSG-Skin/paper-3/results is owned by anhnv mode 755; toandq cannot write there. Files landed in the toandq-writable drop.",
+  "path_rewrites": [
+    {
+      "from": "/mnt/data2/Vinh/CSG-Skin",
+      "to": "/data2/hpcshared/Vinh/CSG-Skin"
+    },
+    {
+      "from": "/mnt/data2/Vinh/CSG-SKin",
+      "to": "/data2/hpcshared/Vinh/CSG-Skin"
+    }
+  ],
+  "verification": {
+    "z_dir": "/data2/hpcshared/Vinh/CSG-Skin/paper-3/results/e2_distances",
+    "runA_grl_s42_expected": 0.8097493585948293,
+    "acc_tol": 0.005,
+    "ok": true,
+    "per_run": [
+      {
+        "run_name": "runA_grl_s42",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8101440694691139,
+        "id_acc_from_summary": 0.8097493585948293,
+        "n_disagree_vs_labels": 962,
+        "abs_delta": 0.000394710874284554
+      },
+      {
+        "run_name": "runA_grl_s52",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.819617130451944,
+        "id_acc_from_summary": 0.8190250641405171,
+        "n_disagree_vs_labels": 914,
+        "abs_delta": 0.000592066311426831
+      },
+      {
+        "run_name": "runA_grl_s62",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8008683639234261,
+        "id_acc_from_summary": 0.8008683639234261,
+        "n_disagree_vs_labels": 1009,
+        "abs_delta": 0.0
+      },
+      {
+        "run_name": "runA_grl_s72",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8095520031576869,
+        "id_acc_from_summary": 0.8099467140319716,
+        "n_disagree_vs_labels": 965,
+        "abs_delta": 0.000394710874284665
+      },
+      {
+        "run_name": "runA_grl_s82",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.7963291888691534,
+        "id_acc_from_summary": 0.7963291888691534,
+        "n_disagree_vs_labels": 1032,
+        "abs_delta": 0.0
+      },
+      {
+        "run_name": "runB_orth1_s42",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8204065522005132,
+        "id_acc_from_summary": 0.8208012630747977,
+        "n_disagree_vs_labels": 910,
+        "abs_delta": 0.000394710874284554
+      },
+      {
+        "run_name": "runB_orth1_s52",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8018551411091376,
+        "id_acc_from_summary": 0.8020524965462799,
+        "n_disagree_vs_labels": 1004,
+        "abs_delta": 0.000197355437142277
+      },
+      {
+        "run_name": "runB_orth1_s62",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8046181172291297,
+        "id_acc_from_summary": 0.8044207617919874,
+        "n_disagree_vs_labels": 990,
+        "abs_delta": 0.000197355437142277
+      },
+      {
+        "run_name": "runB_orth1_s72",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8131044010262483,
+        "id_acc_from_summary": 0.8131044010262483,
+        "n_disagree_vs_labels": 947,
+        "abs_delta": 0.0
+      },
+      {
+        "run_name": "runB_orth1_s82",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8004736530491415,
+        "id_acc_from_summary": 0.8002762976119993,
+        "n_disagree_vs_labels": 1011,
+        "abs_delta": 0.000197355437142277
+      },
+      {
+        "run_name": "runB_s42",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8150779553976712,
+        "id_acc_from_summary": 0.8115255575291099,
+        "n_disagree_vs_labels": 937,
+        "abs_delta": 0.003552397868561319
+      },
+      {
+        "run_name": "runB_s52",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8115255575291099,
+        "id_acc_from_summary": 0.8117229129662522,
+        "n_disagree_vs_labels": 955,
+        "abs_delta": 0.000197355437142277
+      },
+      {
+        "run_name": "runB_s62",
+        "skipped": false,
+        "n_id": 5067,
+        "acc": 0.8093546477205447,
+        "id_acc_from_summary": 0.8103414249062562,
+        "n_disagree_vs_labels": 966,
+        "abs_delta": 0.000986777185711496
+      }
+    ]
+  },
+  "baseline_soft_head_keys": {
+    "skipped": false,
+    "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/baseline/baseline_soft_s42/best-20.ckpt",
+    "classifier_keys": [
+      "net.classifier.bias",
+      "net.classifier.weight"
+    ],
+    "classifier_shapes": {
+      "net.classifier.bias": [
+        8
+      ],
+      "net.classifier.weight": [
+        8,
+        2048
+      ]
+    }
+  },
+  "runs": [
+    {
+      "run_name": "runA_grl_s42",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s42/best-38.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s42/best-38.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runA_grl_s42/summary.json",
+      "checkpoint_sha256": "6e22ed9b4fc07c92724d6d58948d1e5b119d9a2d62b9717dd90b56cbb191e7d7",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 38,
+      "id_acc_from_summary": 0.8097493585948293,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runA_grl_s42/best-38.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runA_grl_s52",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s52/best-37.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s52/best-37.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runA_grl_s52/summary.json",
+      "checkpoint_sha256": "f75802d7fe8a36184142c6dc29376340887a9ae3e8308a5e07998254a0cc58a0",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 37,
+      "id_acc_from_summary": 0.8190250641405171,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runA_grl_s52/best-37.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runA_grl_s62",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s62/best-34.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s62/best-34.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runA_grl_s62/summary.json",
+      "checkpoint_sha256": "4e390116ca302df6fe68b47787f3f5607aab15a7eeeab2f16f8806a62aaba754",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 34,
+      "id_acc_from_summary": 0.8008683639234261,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runA_grl_s62/best-34.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runA_grl_s72",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s72/best-35.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s72/best-35.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runA_grl_s72/summary.json",
+      "checkpoint_sha256": "690bebe3df2914995bfb199c1447ff321d916d2460c3ed3fc94e638e37c8e4dc",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 35,
+      "id_acc_from_summary": 0.8099467140319716,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runA_grl_s72/best-35.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runA_grl_s82",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s82/best-23.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runA_grl_s82/best-23.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runA_grl_s82/summary.json",
+      "checkpoint_sha256": "cac857f30763b4fef477477517774c33f7d137e50152d1608e98f725a55c9944",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 23,
+      "id_acc_from_summary": 0.7963291888691534,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runA_grl_s82/best-23.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runB_orth1_s42",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s42/best-36.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s42/best-36.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_orth1_s42/summary.json",
+      "checkpoint_sha256": "a53bb72c3262a6e3cb80af874a6df5b2dbe7f9605f91ccbcb903fa665dfc612f",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 36,
+      "id_acc_from_summary": 0.8208012630747977,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_orth1_s42/best-36.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runB_orth1_s52",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s52/best-32.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s52/best-32.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_orth1_s52/summary.json",
+      "checkpoint_sha256": "ae2e85ac9b63bb261ef793b01b3ea3a3f5c42810b1af71d5ee9f07c32073846e",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 32,
+      "id_acc_from_summary": 0.8020524965462799,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_orth1_s52/best-32.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runB_orth1_s62",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s62/best-34.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s62/best-34.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_orth1_s62/summary.json",
+      "checkpoint_sha256": "a20a611d1eacb6d0e1eafdec3b2f2f95a4d2bf00061e6955bdbedc280be32bb5",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 34,
+      "id_acc_from_summary": 0.8044207617919874,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_orth1_s62/best-34.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runB_orth1_s72",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s72/best-35.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s72/best-35.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_orth1_s72/summary.json",
+      "checkpoint_sha256": "1107e655e017bf1132215d11b13b8cdeb6e66e61cfbba8abbae8cdeecac2a7fc",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 35,
+      "id_acc_from_summary": 0.8131044010262483,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_orth1_s72/best-35.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runB_orth1_s82",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s82/best-37.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_orth1_s82/best-37.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_orth1_s82/summary.json",
+      "checkpoint_sha256": "0dee89e34d6cdbd10c740c69a856d8264c6bff6145f19674cd8834c90976a21d",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 37,
+      "id_acc_from_summary": 0.8002762976119993,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_orth1_s82/best-37.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runB_s42",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_s42/best-39.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_s42/best-39.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_s42/summary.json",
+      "checkpoint_sha256": "3366f53abaf3a781b6bbf258730baafd7927da35132fa3f81c2acdba7ccf0e55",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 39,
+      "id_acc_from_summary": 0.8115255575291099,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_s42/best-31.ckpt",
+      "e2_cache_matches_best_checkpoint": false
+    },
+    {
+      "run_name": "runB_s52",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_s52/best-28.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_s52/best-28.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_s52/summary.json",
+      "checkpoint_sha256": "b0a9dfdc39be590c34b15211468e164d75b702dbf59bca6e2dd9ca4e828047c0",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 28,
+      "id_acc_from_summary": 0.8117229129662522,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_s52/best-28.ckpt",
+      "e2_cache_matches_best_checkpoint": true
+    },
+    {
+      "run_name": "runB_s62",
+      "checkpoint_path": "/data2/hpcshared/Vinh/CSG-Skin/checkpoints/csg_lite/runB_s62/best-39.ckpt",
+      "best_checkpoint_from_summary": "/mnt/data2/Vinh/CSG-Skin/checkpoints/csg_lite/runB_s62/best-39.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh/CSG-Skin/results/csg_lite/runB_s62/summary.json",
+      "checkpoint_sha256": "82c48eaa60cbdf1e0f7cffca5c6740ca0d1a1d1914ce75103d73885e6f25a3e2",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 39,
+      "id_acc_from_summary": 0.8103414249062562,
+      "e2_cache_checkpoint_path": "../checkpoints/csg_lite/runB_s62/best-28.ckpt",
+      "e2_cache_matches_best_checkpoint": false
+    }
+  ],
+  "missing": [],
+  "e2_cache_vs_summary_mismatches": [
+    {
+      "run_name": "runB_s42",
+      "summary_best": "best-39.ckpt",
+      "e2_cache": "best-31.ckpt"
+    },
+    {
+      "run_name": "runB_s62",
+      "summary_best": "best-39.ckpt",
+      "e2_cache": "best-28.ckpt"
+    }
+  ],
+  "e2_cache_note": "E2 z.npz checkpoint_path is recorded relative to paper-3/. runB_s42 and runB_s62 caches were extracted from a different epoch than summary.json best_checkpoint; this npz uses summary.json, not the E2 cache path. That is why runB_s42/s62 logits-from-cached-z disagree with id_acc more than the 0-2 image GPU/float rounding seen on the other 11 runs."
+}

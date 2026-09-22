@@ -2,7 +2,12 @@
 \usepackage{tmlr}
 % Double-blind TMLR submission: no class option, so tmlr.sty replaces the
 % author block with "Anonymous authors" and prints the "Under review" banner.
-% The \author block below is retained but never typeset in this mode.
+% The author block is anonymised in the source as well, so that submitting the
+% LaTeX source cannot deanonymise the paper. Restore main_preprint.tex for the
+% camera-ready. The Elsevier-style Declarations / Use of Generative AI / Data
+% Availability block is deliberately absent here: TMLR does not use it, the
+% Broader Impact Statement covers what it covered, and availability is stated
+% anonymously in Section~3.9.
 
 \input{math_commands.tex}
 
@@ -15,15 +20,7 @@
 
 \title{Decodable but Directionally Misaligned: Auditing Distance-Based OOD Ranking on Domain-Adversarial Skin-Lesion Representations}
 
-\author{\name Duc-Vinh Tran \email vinh.td225538@sis.hust.edu.vn \\
-      \addr School of Information and Communication Technology \\
-      Hanoi University of Science and Technology \\
-      1 Dai Co Viet Road, Hai Ba Trung, Hanoi 100000, Vietnam
-      \AND
-      \name Quyet-Thang Huynh\thanks{Corresponding author. Email: \texttt{thang.huynhquyet@hust.edu.vn}} \email thang.huynhquyet@hust.edu.vn \\
-      \addr School of Information and Communication Technology \\
-      Hanoi University of Science and Technology \\
-      1 Dai Co Viet Road, Hai Ba Trung, Hanoi 100000, Vietnam}
+\author{\name Anonymous authors \\ \addr Paper under double-blind review}
 
 \hypersetup{
   pdftitle={Decodable but Directionally Misaligned: Auditing Distance-Based OOD Ranking on Domain-Adversarial Skin-Lesion Representations},
@@ -35,8 +32,6 @@
 \begin{document}
 
 \input{common_body}
-
-\input{declarations_anon}
 
 \bibliography{references}
 \bibliographystyle{tmlr}

@@ -1,0 +1,14 @@
+% Moved verbatim from the main text during the length revision
+% (was common_body.tex lines 115-127). Content unchanged.
+\subsection{Representation geometry metrics}
+\label{app:geometry-metrics}
+
+The selected metrics were pre-specified to represent three complementary aspects of representation geometry -- covariance conditioning, class separation, and multivariate normality -- rather than to maximize empirical correlation with downstream performance.
+
+\begin{itemize}
+\item \textbf{Condition number}: the ratio of the largest to smallest eigenvalue of the regularized, shared within-class covariance matrix used to fit the Mahalanobis estimator (Section~\ref{sec:scorers}), measuring how numerically stable that covariance's inversion is.
+\item \textbf{Fisher ratio}: the Hotelling--Lawley trace, $\mathrm{tr}(\Sigma^{-1} S_B)$, computed from the same fitted precision matrix, measuring class separation relative to within-class spread. We additionally report a decoupled scalar companion, $\mathrm{tr}(S_B)/\mathrm{tr}(S_W)$, which involves no matrix inverse and is therefore not entangled with condition number's own estimation noise -- the two are reported together because they are not statistically independent measurements when both derive from the same $\Sigma^{-1}$.
+\item \textbf{Mardia's multivariate kurtosis} \citep{mardia1970measures}: quantifies departure from the class-conditional Gaussian shape the Mahalanobis estimator assumes. The classical closed-form asymptotic null does not apply once class means and covariance are estimated in-sample from the same residuals being tested; its null distribution is calibrated by parametric bootstrap (200 resamples per checkpoint) rather than the textbook formula.
+\end{itemize}
+
+All three metrics are computed on the identical fitted Mahalanobis parameters used for scoring (Section~\ref{sec:scorers}), not from an independently re-estimated covariance, so that geometry and reliability estimation describe the same fitted object.

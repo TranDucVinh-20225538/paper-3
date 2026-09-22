@@ -1,0 +1,24 @@
+% Moved verbatim from the main text during the length revision
+% (was common_body.tex lines 63-85). Content unchanged.
+\begin{figure}[t]
+\centering
+\fbox{\begin{minipage}{0.9\linewidth}
+\centering
+\textbf{Orthogonality-strength ladder within a domain-adversarial regime} \\
+$\lambda_{\mathrm{orth}} = 0, 1, 5$ (13 checkpoints) \\[0.5em]
+$\Downarrow$ \\[0.3em]
+$z_{\mathrm{lesion}}$ embeddings (16-d) \\
+ISIC-train / ISIC-test / PAD-UFES \\[0.5em]
+$\Downarrow$ \\[0.3em]
+\begin{tabular}{ccc}
+\textbf{Geometry metrics} & \textbf{Distance-based scorers} & \textbf{Domain probe} \\
+(condition number, & (Mahalanobis, cosine, & (logistic regression, \\
+Fisher ratio, Mardia $\kappa$) & pooled $k$-NN) & linear SVM, random forest) \\
+\end{tabular} \\[0.5em]
+$\Downarrow$ \\[0.3em]
+\textbf{Association across the ladder} \\
+(exact-permutation Kendall's $\tau$ / Jonckheere--Terpstra)
+\end{minipage}}
+\caption{Study design. An orthogonality-strength ladder within a domain-adversarial regime comprises three checkpoint families ($\lambda_{\mathrm{orth}} = 0, 1, 5$) sharing architecture and representation dimensionality. It is used to test whether an implicit assumption---that representation geometry reflects reliability-estimation quality---holds across changes in orthogonality strength within that regime. Geometry metrics, three distance-based scorers, and domain-information probes are computed on identical embeddings for each of 13 checkpoints (Section~\ref{sec:design}).}
+\label{fig:study-design}
+\end{figure}

@@ -1,0 +1,18 @@
+% Moved verbatim from the main text during the length revision
+% (was common_body.tex lines 381-399). Content unchanged.
+
+The results are easier to interpret if raw representation geometry is distinguished from \emph{scorer-relevant geometry}. For a full-rank affine change of coordinates $z' = Az+b$, with class means and the shared covariance transformed consistently as $\mu'_c=A\mu_c+b$ and $\Sigma'=A\Sigma A^\top$, the unregularized squared Mahalanobis distance is invariant:
+\begin{equation}
+(z'-\mu'_c)^\top (\Sigma')^{-1}(z'-\mu'_c)
+= (z-\mu_c)^\top \Sigma^{-1}(z-\mu_c).
+\label{eq:mahal-invariance}
+\end{equation}
+Yet the numerical condition number $\kappa(\Sigma)$ can change greatly under a non-orthogonal $A$. Thus covariance conditioning can move by orders of magnitude without forcing Mahalanobis rankings, and therefore AUROC, to move commensurately. The small ridge term used here ($\varepsilon=10^{-5}$) weakens exact affine invariance in finite samples but does not change the conceptual point: condition number is a property of a fitted covariance representation, not a sufficient statistic for Mahalanobis OOD ranking.
+
+The other scorers preserve different structure. Cosine-to-centroid distance is invariant to a common orthogonal rotation and positive uniform rescaling, but is sensitive to translation and anisotropic transformations. Euclidean $k$-NN distance is invariant to translation and orthogonal transformations; positive uniform rescaling multiplies all distances by the same constant and therefore preserves their ordering, whereas anisotropic transformations can change neighborhoods. Finally, AUROC itself is invariant to every strictly increasing transformation of a score. These invariances imply that the chain
+\[
+\text{raw geometric change} \;\Rightarrow\; \text{score change} \;\Rightarrow\; \text{ranking change} \;\Rightarrow\; \text{AUROC change}
+\]
+is not automatic.
+
+This distinction changes the interpretation of the present null associations. The finding is not that ``geometry does not matter'' for distance-based reliability estimation. Rather, the measured covariance-conditioning change is not sufficient to predict directed OOD ranking in this regime, and the other measured summaries do not show systematic ladder trends. The convergence of Mahalanobis, cosine-to-centroid, and pooled $k$-NN on the same polarity reversal and similarly weak orientation-free separability points to a mismatch between the intended OOD semantics and the particular geometric orderings these scorers impose. This suggests a general audit principle beyond medical imaging: when representation-learning interventions are combined with post-hoc reliability mechanisms, evaluation should separately test score polarity, orientation-free separation, and information recoverable from the underlying representation, while identifying the invariances and sensitivities of the downstream scorer.

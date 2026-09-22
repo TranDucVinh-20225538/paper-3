@@ -1,4 +1,4 @@
-\begin{thebibliography}{51}
+\begin{thebibliography}{52}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -53,6 +53,14 @@ Noel Codella, David Gutman, M.~Emre Celebi, Brian Helba, Michael~A. Marchetti,
 \newblock Skin lesion analysis toward melanoma detection 2018: A challenge
   hosted by the international skin imaging collaboration (isic).
 \newblock \emph{arXiv preprint arXiv:1902.03368}, 2019.
+
+\bibitem[Combalia et~al.(2019)Combalia, Codella, Rotemberg, Helba, Vilaplana,
+  Reiter, Carrera, Barreiro, Halpern, Puig, and Malvehy]{combalia2019bcn20000}
+Marc Combalia, Noel C.~F. Codella, Veronica Rotemberg, Brian Helba, Veronica
+  Vilaplana, Ofer Reiter, Cristina Carrera, Alicia Barreiro, Allan~C. Halpern,
+  Susana Puig, and Josep Malvehy.
+\newblock Bcn20000: Dermoscopic lesions in the wild.
+\newblock \emph{arXiv preprint arXiv:1908.02288}, 2019.
 
 \bibitem[Daneshjou et~al.(2022)Daneshjou, Vodrahalli, Novoa, Jenkins, Liang,
   Rotemberg, Ko, Swetter, Bailey, Gevaert, et~al.]{daneshjou2022disparities}

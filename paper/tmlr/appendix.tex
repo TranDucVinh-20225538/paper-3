@@ -1,5 +1,42 @@
 \appendix
 
+\section{Extended methods}
+\label{app:methods}
+
+This appendix holds the pipeline diagram and the full metric definitions that
+Section~\ref{sec:methods} states in summary form. Nothing here differs from what
+was computed; it is the same protocol at greater length.
+
+\input{moved/study_design_figure}
+
+\input{moved/geometry_metrics}
+
+\section{Supplementary results}
+\label{app:results-extra}
+
+Section~\ref{sec:geometry-auroc} reports Mahalanobis AUROC by rung and its
+association with each geometry metric; Table~\ref{tab:mahalanobis-auroc} and
+Figure~\ref{fig:geometry-vs-auroc} give those results in full.
+
+\input{moved/results_auroc_floats}
+
+\subsection{Two candidate explanations for the distance gap}
+\label{app:norm-majority}
+
+Section~\ref{sec:systematic-lower} reports that median Mahalanobis distance is
+lower for PAD-UFES than for ISIC-test at every checkpoint, and notes that two
+obvious explanations do not account for it on their own. Those two analyses are
+reported here.
+
+\input{moved/results_norm_majority}
+
+\subsection{Per-rung view of the five scorer variants}
+\label{app:five-scorers-figure}
+
+Figure~\ref{fig:five-scorers} plots the values tabulated in Table~\ref{tab:five-scorers}, Panel~A.
+
+\input{moved/fig5_three_scorers}
+
 \section{Detectability, power, and interval estimates}
 \label{app:power}
 
@@ -86,3 +123,29 @@ $\lambda_{\mathrm{orth}}$ (star) sits at its design ceiling and is drawn without
 an interval, for the reason given in Section~\ref{app:power-ci}.}
 \label{fig:power}
 \end{figure}
+
+
+\section{Scorer invariance, sensitivity, and what ``geometry'' can predict}
+\label{app:invariance}
+
+This appendix develops the argument summarized in
+Section~\ref{sec:invariance-pointer}.
+
+\input{moved/invariance}
+
+\section{Extended related work}
+\label{app:related-work}
+
+Section~\ref{sec:related-work} summarizes six adjacent literatures in four
+paragraphs. This appendix gives the extended treatment of each.
+
+\input{moved/related_work}
+
+\subsection{Relation to literature, continued}
+\label{app:relation-lit}
+
+Section~\ref{sec:relation-lit} returns to the two literatures whose relationship
+to these findings is most direct. This subsection covers the remaining ones and
+the practitioner implications.
+
+\input{moved/relation_lit}

@@ -52,12 +52,14 @@ ANALYSIS = [
     "analysis/analyze_predicted_class.py",
     "analysis/analyze_power_and_ci.py",
     "analysis/dump_raw_scores.py",
+    "analysis/make_checkpoint_matrix.py",
 ]
 FIGURES = [
     "analysis/make_figure_power_tmlr.py",
     "analysis/make_tables_power_tmlr.py",
     "analysis/make_figure_dumbbell.py",
     "analysis/_id_ood_plots.py",
+    "analysis/make_paper_figures.py",
 ]
 
 # Applied in order. Longest/most specific first, so a later rule cannot

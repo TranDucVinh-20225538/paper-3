@@ -27,26 +27,43 @@ three points on the ladder's top rung come from a non-optimal epoch.
 cache, so no single data point mixes two checkpoints. They are consistently
 wrong together for these two seeds, not inconsistently wrong.
 
-## Why the published results were kept
+## How it was resolved
 
-Re-extraction was attempted and abandoned. The August environment
-(`torch 2.11.0+cu130`) could not be rebuilt on the current HPC host, and a
-control re-run of `runB_s52` — a seed whose checkpoint is *correct* and needs
-no change — failed to reproduce its own published numbers under
-`torch 2.1.1`. Mixing two seeds extracted in a new environment with eleven from
-the old one would have introduced a second, less tractable inconsistency to fix
-the first. The authors chose to report the results as computed and disclose the
-discrepancy in the Limitations section.
+Both discrepancies were corrected on 2026-09-22 by re-extracting **all fifteen**
+ladder checkpoints in a single software environment, using the checkpoint each
+run's `summary.json` names. `runB_s42` moved from `best-31` to `best-39` and
+`runB_s62` from `best-28` to `best-39`; the other thirteen kept their file and
+changed only by the environment.
 
-The control failure is itself unexplained and is *not* numerical noise:
-condition number amplifies embedding perturbation by only 3–4× (measured), and
-an independent reimplementation of the metric on the same cached embeddings
-agrees with the published value to 1.25e-5. The leading hypothesis is a
-`torchvision` preprocessing change (`Resize` antialias default), unverified.
+Re-extraction had first been judged infeasible, and that judgement was wrong in
+two ways worth recording. It needs no write access to the frozen repository —
+only read access to the checkpoint — and no training, only a forward pass. What
+had actually blocked it was an over-strict acceptance gate: a control re-run of
+`runB_s52` was required to reproduce its published numbers to 1e-4 and did not,
+so the work stopped. That threshold answered "is this the same environment",
+which was not the question. The deviation it detected is about 1.5 units of
+condition number against a between-seed standard deviation of 2672 units on the
+same rung, three orders of magnitude apart.
 
-## Sensitivity of the headline result
+On the eleven checkpoints whose file did not change, the largest relative
+deviation between the two environments is 9.3e-4 — within the accepted drift
+and far from the 1 % that would indicate something structural. The environment
+difference itself is unexplained; the leading hypothesis is Pillow's resampling
+implementation (9.3.0 here against a much later version in August), since
+`Resize` in this pipeline runs on PIL images, where torchvision's `antialias`
+argument has no effect.
 
-The only significant association in the paper is condition number vs.
+`baseline_soft` was deliberately **not** re-extracted. It is a single
+descriptive reference checkpoint, carries no statistical test, and its 2048-d
+embeddings are a 193 MB file; it therefore remains from the August environment,
+and that is stated in the manuscript's Limitations.
+
+## Sensitivity of the headline result — as assessed before the correction
+
+*Kept as the record of what informed the decision at the time. It describes the
+5/5/3 design and the pre-correction values; for the current state see below.*
+
+The only significant association in the paper was condition number vs.
 λ_orth, τ = 0.8397 — the maximum the 5/5/3 design permits.
 
 - Largest condition number on the two lower rungs: **738.8** (`runB_orth1`).
@@ -60,6 +77,12 @@ The only significant association in the paper is condition number vs.
 
 Substituting epoch 31 → 39 and 28 → 39 within the same training run does not
 plausibly produce a 4–11× drop in condition number.
+
+**What the correction actually did.** `runB_s42` went from 8256.8 to 12719.6
+and `runB_s62` from 3020.3 to 5905.8 — both up, both still far above 738.8, so
+the ladder stayed perfectly monotone. On the 5/5/5 design the headline is now
+τ = 0.8452 with exact *p* = 2.6e-6, and Jonckheere–Terpstra reaches J = 75 of
+75 cross-rung pairs. The prediction above held.
 
 ## Reproducing this audit
 

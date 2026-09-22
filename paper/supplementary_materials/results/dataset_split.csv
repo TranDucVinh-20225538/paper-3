@@ -1,0 +1,7 @@
+quantity,value,how_to_verify
+isic_2019_metadata_rows,25331,wc -l on data/ISIC_2019_Training_Metadata.csv minus header (CSG-SKin)
+isic_train,16211,len(z_train) in results/e2_distances/*_z.npz (gitignored; archived separately)
+isic_val,4053,derived: metadata_rows - isic_train - isic_test; matches val_fraction=0.2 of 20264
+isic_test,5067,"len(z_id), and n_id column of results/raw_scores/validation_report.csv"
+padufes_ood,2298,"len(z_ood), and n_ood column of results/raw_scores/validation_report.csv"
+num_classes,8,src/datasets/constants.py LABELS in CSG-SKin: MEL NV BCC AK BKL DF VASC SCC

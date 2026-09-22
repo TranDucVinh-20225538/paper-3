@@ -9,7 +9,7 @@ Run everything at once:
 python3 scripts/verify_claims.py
 ```
 
-Twelve checks, each printing the number it found. Checks needing the 208 MB
+Sixteen checks, each printing the number it found. Checks needing the 208 MB
 embedding cache (gitignored, archived separately) or the sibling classifier
 repository report `SKIP` rather than passing silently.
 
@@ -72,6 +72,30 @@ recorded in `results/lesion_classifier_heads_cache_manifest.json`.
 The `status` column of the validation report reads `khớp` (matched) or
 `không có mốc` (no published reference); `scripts/verify_claims.py` counts them
 for you.
+
+---
+
+## Claim (c) — the ladder is 5/5/5 and every row points at the right checkpoint
+
+Two questions were put to this repository directly: whether the ladder was
+really five seeds per rung or still three on the top rung, and whether the two
+`runB` rows that had come from a superseded checkpoint were still there. Both
+are now mechanical checks rather than assertions, and both print the value they
+found:
+
+| Check | What it reads |
+|---|---|
+| every result file reports the same ladder inventory | seed sets in `e1_geometry_metrics.csv`, `e2_auroc.csv`, `distance_summary.csv`, `checkpoint_results_matrix.csv` |
+| the ladder is 5/5/5, not 5/5/3 | those same seed sets |
+| every file agrees on which checkpoint each row came from | the `checkpoint_path` column, compared across files |
+| no `runB` row still uses a superseded checkpoint | `runB` seeds 42 and 62 must read `best-39.ckpt` |
+
+The last one exists because those two rows previously read `best-31.ckpt` and
+`best-28.ckpt` — epochs ranked 6th and 18th of 40 on validation accuracy, where
+the training run's own `summary.json` names `best-39` for both. All fifteen
+checkpoints were re-extracted in one environment to correct it;
+`docs/checkpoint_selection_audit.md` records what happened and why the first
+attempt was abandoned.
 
 ---
 

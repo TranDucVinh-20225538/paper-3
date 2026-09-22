@@ -57,7 +57,7 @@ Stages 1–3 load trained checkpoints through the audited classifier's own model
 code, so they require `torch`, that classifier's repository on the import path
 (its root is located by marker file, or by the `CLASSIFIER_ROOT` environment
 variable — see `scripts/_repo_paths.py`), the ISIC 2018 and PAD-UFES-20 image
-data, and the 13 checkpoints. Checkpoints and the 349 MB of intermediate
+data, and the 15 ladder checkpoints. Checkpoints and the intermediate
 embeddings are too large to include here and are released with the archival
 version; the classifier repository is withheld during review because its name
 identifies the authors.
@@ -77,7 +77,8 @@ streams the single `--seed` derives.
 ## The checkpoint-level matrix
 
 `results/checkpoint_results_matrix.csv` is the primary data table: one row per
-checkpoint, 13 rows, every quantity the paper analyses.
+checkpoint, 15 rows, every quantity the paper analyses, plus the
+checkpoint file each row was built from.
 
 | column | meaning |
 |---|---|
@@ -87,12 +88,12 @@ checkpoint, 13 rows, every quantity the paper analyses.
 | `probe_{lr,svm,rf}_auroc` | domain-probe AUROC (Section 3.4) |
 
 It regenerates the summary statistics in the paper exactly: condition number
-75.5 ± 7.8, 559.8 ± 125.9, 5329.9 ± 2672.2 across the three rungs; pooled
-directed AUROC 0.402 ± 0.024 (Mahalanobis) and 0.418 ± 0.022 (cosine).
+75.5 ± 7.8, 559.8 ± 126.1, 8066.2 ± 3337.1 across the three rungs; pooled
+directed AUROC 0.408 ± 0.022 (Mahalanobis) and 0.422 ± 0.025 (cosine).
 
-One aggregation note, so the matrix is not misread: the paper's "0.72–0.81
-AUROC" for the probes is the range over the nine rung-by-probe means. The 39
-individual checkpoint-level values in this matrix span 0.69–0.84.
+One aggregation note, so the matrix is not misread: the paper's "0.72–0.82
+AUROC" for the probes is the range over the nine rung-by-probe means. The 45
+individual checkpoint-level values in this matrix span 0.69–0.86.
 
 ## Independent check on the power analysis
 

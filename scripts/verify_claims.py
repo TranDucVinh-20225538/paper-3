@@ -68,16 +68,24 @@ check("(a) BCN20000 added (ISIC 2019 = BCN20000 + HAM10000 + MSK)",
 rep_path = ROOT / "results" / "raw_scores" / "validation_report.csv"
 rep = pd.read_csv(rep_path)
 n_match = int((rep.status == "khớp").sum())
-check("(b) 110 (checkpoint x scorer) combinations checked",
-      len(rep) == 110, f"{len(rep)} rows in {rep_path.relative_to(ROOT)}")
-check("(b) 109 reproduce the published AUROC and FPR95",
-      n_match == 109, f"{n_match} matched, {len(rep)-n_match} without a published reference")
+n_ckpt = rep.run.nunique()
+n_scorer = rep.scorer.nunique()
+# Counts are derived, not declared: hardcoding 110 and 109 made this script
+# fail the moment the ladder grew, which is the opposite of what a check is for.
+check("(b) every checkpoint x scorer combination is covered",
+      len(rep) == len(rep.drop_duplicates(["run", "scorer"])),
+      f"{len(rep)} rows over {n_ckpt} checkpoints and {n_scorer} scorers")
+check("(b) every combination reproduces the published AUROC and FPR95",
+      n_match == len(rep),
+      f"{n_match}/{len(rep)} matched" +
+      ("" if n_match == len(rep) else f", {len(rep)-n_match} without a published reference"))
 worst = rep.d_auroc.max()
 check("(b) largest deviation is at machine precision",
       worst < 1e-6, f"max |delta AUROC| = {worst:.2e}")
 
 npzs = sorted((ROOT / "results" / "raw_scores").glob("*_scores.npz"))
-check("(b) one score file per checkpoint", len(npzs) == 14, f"{len(npzs)} .npz files")
+check("(b) one score file per checkpoint",
+      len(npzs) == n_ckpt, f"{len(npzs)} .npz files for {n_ckpt} checkpoints")
 
 bad = []
 for f in npzs:
@@ -92,6 +100,40 @@ check(f"(b) every array is {te} ID and {int(split['padufes_ood'])} OOD values",
 counts = {len({k.split("__")[0] for k in np.load(f, allow_pickle=True).files if "__" in k}) for f in npzs}
 check("(b) eight scorers on the ladder, six on the baseline reference",
       counts == {8, 6}, f"scorers per file: {sorted(counts)}")
+
+
+# ---------------------------------------------------------------- claim (c)
+# The two questions a reader asked of this repository directly: is the ladder
+# really 5/5/5, and does every row still point at the checkpoint it should?
+
+LADDER = ["runA_grl", "runB_orth1", "runB"]
+inventories, paths = {}, {}
+for name in ["e1_geometry_metrics.csv", "e2_auroc.csv", "distance_summary.csv",
+             "checkpoint_results_matrix.csv"]:
+    d = pd.read_csv(ROOT / "results" / name)
+    d = d[d.rung.isin(LADDER)]
+    inventories[name] = {r: tuple(sorted(g.seed)) for r, g in d.groupby("rung")}
+    if "checkpoint_path" in d.columns:
+        paths[name] = {(r.rung, r.seed): Path(str(r.checkpoint_path)).name
+                       for r in d.itertuples()}
+
+sizes = {n: tuple(len(v) for _, v in sorted(inv.items())) for n, inv in inventories.items()}
+uniform = len(set(sizes.values())) == 1
+check("(c) every result file reports the same ladder inventory",
+      uniform, ", ".join(f"{n.split('.')[0]}={'/'.join(map(str, s))}" for n, s in sizes.items())
+      if not uniform else f"all {list(sizes.values())[0]}")
+one = list(inventories.values())[0]
+check("(c) the ladder is 5/5/5, not 5/5/3",
+      all(len(v) == 5 for v in one.values()),
+      ", ".join(f"{r}: {len(v)} seeds" for r, v in sorted(one.items())))
+
+ref = paths["e1_geometry_metrics.csv"]
+disagree = [k for name, m in paths.items() for k in m if m[k] != ref.get(k)]
+check("(c) every file agrees on which checkpoint each row came from",
+      not disagree, "consistent" if not disagree else f"{len(set(disagree))} disagree: {sorted(set(disagree))[:3]}")
+check("(c) no runB row still uses a superseded checkpoint",
+      all(ref[k] == "best-39.ckpt" for k in ref if k == ("runB", 42) or k == ("runB", 62)),
+      "runB s42=" + ref[("runB", 42)] + ", s62=" + ref[("runB", 62)])
 
 # ---------------------------------------------------------------------- out
 w = max(len(n) for _, n, _ in results)

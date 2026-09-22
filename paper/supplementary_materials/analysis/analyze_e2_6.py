@@ -14,7 +14,7 @@ rather than overwrite and a re-run without clearing produces all three:
   1. exact duplicate rows are dropped, but reported rather than hidden;
   2. a duplicate (rung, seed, scorer) with differing auroc/fpr95 or
      checkpoint_path stops the script -- that is a conflict, not a re-run;
-  3. all 104 rows (13 checkpoints x 8 scorers) must be present, or the
+  3. every checkpoint present must carry every scorer, or the
      script stops and lists what is missing.
 
 Writes table_e2_6_scorer_summary.csv, e2_6_kendall_tau.csv,
@@ -32,7 +32,6 @@ import numpy as np
 import pandas as pd
 
 from analyze_e1 import (
-    COMMON_SEEDS,
     PRIMARY_RUNGS,
     RUNG_INDEX,
     RUNG_LAMBDA,
@@ -42,7 +41,19 @@ from analyze_e1 import (
 
 SCORERS = ["mahalanobis", "cosine", "knn_k1", "knn_k10", "knn_k50", "energy", "vim", "density_kde"]
 PRIMARY_K_SCORER = "knn_k10"  # experiment_contract.md's headline k-NN value; knn_k1/knn_k50 are the robustness grid
-RUNG_SEEDS = {"runA_grl": {42, 52, 62, 72, 82}, "runB_orth1": {42, 52, 62, 72, 82}, "runB": {42, 52, 62}}
+
+
+def rung_seeds_from(df) -> dict:
+    """Checkpoint inventory, read from the file rather than declared.
+
+    Was a hardcoded {runA_grl: 5 seeds, runB_orth1: 5 seeds, runB: 3 seeds},
+    which silently encoded the state of the checkpoint pool at one moment. The
+    completeness gate below is unchanged and is the part that matters: every
+    checkpoint present must carry every scorer, so a half-extracted run still
+    stops the analysis. What is no longer asserted is *which* checkpoints ought
+    to exist -- that belongs to the manifest, not to this script.
+    """
+    return {r: set(g["seed"]) for r, g in df.groupby("rung")}
 
 
 def load_and_validate(csv_path: Path) -> pd.DataFrame:
@@ -82,7 +93,7 @@ def load_and_validate(csv_path: Path) -> pd.DataFrame:
     # 3. every (rung, seed, scorer) the manifest requires must be present
     expected = {
         (rung, seed, scorer)
-        for rung, seeds in RUNG_SEEDS.items()
+        for rung, seeds in rung_seeds_from(df).items()
         for seed in seeds
         for scorer in SCORERS
     }
@@ -98,7 +109,7 @@ def load_and_validate(csv_path: Path) -> pd.DataFrame:
         )
         n_expected = len(expected)
         raise SystemExit(
-            f"FATAL: expected {n_expected} rows (13 checkpoints x {len(SCORERS)} scorers), "
+            f"FATAL: expected {n_expected} rows ({len(rung_seeds_from(df))} rungs x {len(SCORERS)} scorers), "
             f"found {len(actual)} valid rows in {csv_path}. Missing:\n{lines}\n"
             "Stopping -- not analyzing a partial scorer comparison. Re-run "
             "scripts/extract_auroc_e2.py for exactly the checkpoint(s) listed above "
@@ -108,7 +119,7 @@ def load_and_validate(csv_path: Path) -> pd.DataFrame:
 
     df["rung_index"] = df["rung"].map(RUNG_INDEX)
     print(f"[analyze_e2_6] Validated: {len(df)}/{len(expected)} rows, "
-          f"{len(SCORERS)} scorers x 13 checkpoints, no unresolved duplicates.\n")
+          f"{len(SCORERS)} scorers x {len(actual)//len(SCORERS)} checkpoints, no unresolved duplicates.\n")
     return df
 
 
@@ -188,7 +199,8 @@ def main():
     summary = table_scorer_summary(df)
     summary.to_csv(out_dir / "table_e2_6_scorer_summary.csv", index=False)
 
-    print("=== AUROC per scorer, pooled across the full primary ladder (13 checkpoints) ===")
+    print(f"=== AUROC per scorer, pooled across the full primary ladder "
+          f"({df.groupby(['rung','seed']).ngroups} checkpoints) ===")
     pooled_view = summary[summary["rung"] == "ALL (pooled)"].sort_values("auroc_mean", ascending=False)
     for _, row in pooled_view.iterrows():
         flag = "  <- headline k" if row["scorer"] == PRIMARY_K_SCORER else ""

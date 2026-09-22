@@ -46,6 +46,10 @@ def discover_checkpoints(npz_dir: Path) -> pd.DataFrame:
     rows = []
     for rung in PRIMARY_RUNGS:
         for path in sorted(npz_dir.glob(f"{rung}_s*.npz")):
+            # the glob also catches the companion <rung>_s<seed>_z.npz embedding
+            # files, whose stem ends "_z" and is not an integer seed
+            if path.stem.endswith("_z"):
+                continue
             seed = int(path.stem.split("_s")[-1])
             rows.append({"rung": rung, "seed": seed})
     return pd.DataFrame(rows)
@@ -86,9 +90,6 @@ def main():
 
     npz_dir = Path(args.npz_dir)
     manifest = discover_checkpoints(npz_dir)
-    if len(manifest) != 13:
-        print(f"[analyze_norm] WARNING: found {len(manifest)} checkpoints in {npz_dir}, expected 13 "
-              "(5 runA_grl + 5 runB_orth1 + 3 runB). Proceeding with what's available.")
 
     table = per_checkpoint_table(npz_dir, manifest)
     out_dir = Path(args.output_dir)

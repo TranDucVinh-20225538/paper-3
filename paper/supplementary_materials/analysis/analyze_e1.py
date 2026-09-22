@@ -42,7 +42,17 @@ from scipy.stats import kendalltau, norm
 PRIMARY_RUNGS = ["runA_grl", "runB_orth1", "runB"]  # ordered: lambda_orth = 0, 1, 5
 RUNG_LAMBDA = {"runA_grl": 0.0, "runB_orth1": 1.0, "runB": 5.0}
 RUNG_INDEX = {rung: i for i, rung in enumerate(PRIMARY_RUNGS)}
-COMMON_SEEDS = {42, 52, 62}  # all three primary rungs have these; runB has only these
+def common_seeds(primary) -> set:
+    """Seeds present on every primary rung.
+
+    Was a hardcoded {42, 52, 62}, which was correct only while runB had three
+    seeds. Deriving it keeps the subset meaning what its name says when the
+    rung inventory changes; when every rung carries every seed the subset is
+    the full ladder, and the two tests coincide by construction rather than by
+    accident.
+    """
+    per_rung = [set(primary[primary["rung"] == r]["seed"]) for r in PRIMARY_RUNGS]
+    return set.intersection(*per_rung) if per_rung else set()
 
 METRICS = [
     "condition_number",
@@ -102,7 +112,10 @@ def table1(primary: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-MAX_EXACT_ARRANGEMENTS = 500_000  # safety cap; 5/5/3 -> 72,072, 3/3/3 -> 1,680, both well under this
+MAX_EXACT_ARRANGEMENTS = 1_000_000  # safety cap. 5/5/3 -> 72,072; 5/5/5 -> 756,756;
+# 3/3/3 -> 1,680. Raised from 500,000 when runB gained its 4th and 5th seed: the
+# 5/5/5 ladder needs 756,756 arrangements, which enumerates in seconds. The cap
+# exists to refuse a design that would not finish, not to pin one inventory.
 
 
 def _enumerate_group_arrangements(group_sizes: tuple[int, ...]):
@@ -126,6 +139,30 @@ def _enumerate_group_arrangements(group_sizes: tuple[int, ...]):
                 yield (grp,) + tail
 
     yield from helper(positions, group_sizes)
+
+
+_NULL_CACHE: dict = {}
+
+
+def _cached_null(group_sizes: tuple[int, ...], statistic_fn) -> np.ndarray:
+    """Null distribution of statistic_fn over every label arrangement.
+
+    Both statistics used here -- Kendall's tau_b and Jonckheere-Terpstra's J --
+    read only the ranks of the response, so for a tie-free response the set of
+    attainable values under relabelling depends on group_sizes alone, not on
+    the response itself. Enumerating once per (group_sizes, statistic) and
+    reusing it turns a 5/5/5 run from ~88s per test into ~88s for the whole
+    analysis. Callers must check for ties before using this; the slow path
+    below stays for the tied case.
+    """
+    key = (group_sizes, statistic_fn.__name__)
+    if key not in _NULL_CACHE:
+        canonical = np.arange(sum(group_sizes), dtype=float)
+        _NULL_CACHE[key] = np.array([
+            statistic_fn([canonical[list(idx)] for idx in arrangement])
+            for arrangement in _enumerate_group_arrangements(group_sizes)
+        ])
+    return _NULL_CACHE[key]
 
 
 def exact_permutation_pvalue(values: np.ndarray, group_sizes: tuple[int, ...], statistic_fn) -> dict:
@@ -160,12 +197,16 @@ def exact_permutation_pvalue(values: np.ndarray, group_sizes: tuple[int, ...], s
         start += size
     stat_obs = statistic_fn(obs_groups)
 
-    count_as_extreme = 0
-    for arrangement in _enumerate_group_arrangements(group_sizes):
-        groups = [values[list(idx)] for idx in arrangement]
-        stat_perm = statistic_fn(groups)
-        if abs(stat_perm) >= abs(stat_obs) - 1e-9:
-            count_as_extreme += 1
+    if len(np.unique(values)) == len(values):
+        null = _cached_null(group_sizes, statistic_fn)
+        count_as_extreme = int((np.abs(null) >= abs(stat_obs) - 1e-9).sum())
+    else:
+        count_as_extreme = 0
+        for arrangement in _enumerate_group_arrangements(group_sizes):
+            groups = [values[list(idx)] for idx in arrangement]
+            stat_perm = statistic_fn(groups)
+            if abs(stat_perm) >= abs(stat_obs) - 1e-9:
+                count_as_extreme += 1
 
     return {
         "statistic": stat_obs,
@@ -194,7 +235,7 @@ def kendall_trend(primary: pd.DataFrame, metric: str) -> dict:
     full_sizes = tuple(full.groupby("rung_index").size().sort_index().tolist())
     full_result = exact_permutation_pvalue(full[metric].to_numpy(), full_sizes, _kendall_tau_statistic)
 
-    common = primary[primary["seed"].isin(COMMON_SEEDS)].sort_values("rung_index")[["rung_index", metric]].dropna()
+    common = primary[primary["seed"].isin(common_seeds(primary))].sort_values("rung_index")[["rung_index", metric]].dropna()
     common_sizes = tuple(common.groupby("rung_index").size().sort_index().tolist())
     common_result = exact_permutation_pvalue(common[metric].to_numpy(), common_sizes, _kendall_tau_statistic)
 

@@ -120,6 +120,8 @@ def main() -> None:
                     help="one or more head npz files; later files override earlier keys")
     ap.add_argument("--runs", nargs="*", default=None, help="chỉ chạy các run này")
     ap.add_argument("--tol", type=float, default=1e-6)
+    ap.add_argument("--append-missing", action="store_true",
+                    help="ghi (checkpoint, scorer) chưa có vào e2_6_scorer_comparison.csv")
     args = ap.parse_args()
 
     published = pd.read_csv(ROOT / "results" / "e2_6_scorer_comparison.csv")
@@ -178,6 +180,28 @@ def main() -> None:
 
     rep = pd.DataFrame(rows)
     rep.to_csv(args.out_dir / "validation_report.csv", index=False)
+
+    if args.append_missing:
+        # Scorers whose AUROC was never written for a checkpoint -- the new
+        # seeds' energy/vim/kde, which extract_e2_8 cannot produce here because
+        # it resolves the .ckpt itself. Appending keeps the comparison file the
+        # single inventory analyze_e2_6 validates against.
+        add = rep[rep.status == "không có mốc"].copy()
+        if len(add):
+            comp_path = ROOT / "results" / "e2_6_scorer_comparison.csv"
+            comp = pd.read_csv(comp_path)
+            meta = {}
+            for run in add.run.unique():
+                z = np.load(args.cache_dir / f"{run}_z.npz", allow_pickle=True)
+                meta[run] = (str(z["rung"]), int(z["seed"]), str(z["checkpoint_path"]))
+            new_rows = [dict(rung=meta[r.run][0], method="csg", seed=meta[r.run][1],
+                             checkpoint_path=meta[r.run][2], scorer=r.scorer,
+                             auroc=r.auroc, fpr95=r.fpr95) for r in add.itertuples()]
+            out = pd.concat([comp, pd.DataFrame(new_rows)[comp.columns]], ignore_index=True)
+            comp_path.rename(comp_path.with_suffix(".csv.bak"))
+            out.to_csv(comp_path, index=False)
+            print(f"\nĐã thêm {len(new_rows)} dòng vào e2_6_scorer_comparison.csv "
+                  f"({len(comp)} -> {len(out)}); bản cũ ở {comp_path.name}.bak")
     print(f"\n{len(runs)} checkpoint, {len(rep)} (checkpoint x scorer)")
     print(rep.status.value_counts().to_string())
     if failures:

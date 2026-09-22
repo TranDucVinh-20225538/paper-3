@@ -49,3 +49,7 @@ paper/tmlr_full_for_review.zip
 paper/sncs/
 paper/sncs_submission.zip
 scripts/build_sncs.py
+
+# Legacy arXiv-era dumbbell output; the TMLR/SNCS build uses
+# paper/tmlr/generate_fig6.py instead
+paper/figures/

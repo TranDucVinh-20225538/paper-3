@@ -131,9 +131,28 @@ ref = paths["e1_geometry_metrics.csv"]
 disagree = [k for name, m in paths.items() for k in m if m[k] != ref.get(k)]
 check("(c) every file agrees on which checkpoint each row came from",
       not disagree, "consistent" if not disagree else f"{len(set(disagree))} disagree: {sorted(set(disagree))[:3]}")
-check("(c) no runB row still uses a superseded checkpoint",
-      all(ref[k] == "best-39.ckpt" for k in ref if k == ("runB", 42) or k == ("runB", 62)),
-      "runB s42=" + ref[("runB", 42)] + ", s62=" + ref[("runB", 62)])
+# Naming an expected epoch here would go stale the next time a run is
+# retrained -- it already did. What must hold instead is that the classifier
+# head used to rebuild logits came from the same checkpoint as the embeddings:
+# a mismatch there silently scores one model's features with another's head,
+# which is the failure this repository actually hit once.
+import json
+heads = {}
+for mf in sorted((ROOT / "results").glob("lesion_classifier_heads*_manifest.json")):
+    try:
+        entries = json.loads(mf.read_text())
+    except json.JSONDecodeError:
+        continue
+    rows = entries if isinstance(entries, list) else entries.get("runs", [])
+    for e in rows:
+        if isinstance(e, dict) and "run_name" in e and "checkpoint_path" in e:
+            heads[e["run_name"]] = Path(str(e["checkpoint_path"])).name
+covered = {f"{r}_s{s_}": ref[(r, s_)] for r, s_ in ref}
+mismatch = [k for k in covered if k in heads and heads[k] != covered[k]]
+check("(c) classifier heads come from the same checkpoints as the embeddings",
+      not mismatch and len(heads) >= len(covered),
+      f"{len(heads)}/{len(covered)} runs covered by a head manifest"
+      + ("" if not mismatch else f", {len(mismatch)} mismatched: {mismatch[:3]}"))
 
 # ---------------------------------------------------------------------- out
 w = max(len(n) for _, n, _ in results)

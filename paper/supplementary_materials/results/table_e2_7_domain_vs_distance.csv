@@ -1,13 +1,13 @@
 rung,lambda_orth,role,nonprobing_scorer_auroc_mean,probe,domain_probe_auroc_mean
-runA_grl,0.0,primary ladder,0.4119738790030819,logistic_regression,0.719509143190559
-runA_grl,0.0,primary ladder,0.4119738790030819,linear_svm,0.7172401053043267
-runA_grl,0.0,primary ladder,0.4119738790030819,random_forest,0.8059480421018062
-runB_orth1,1.0,primary ladder,0.4161280254511221,logistic_regression,0.7408632419572505
-runB_orth1,1.0,primary ladder,0.4161280254511221,linear_svm,0.740011384437227
-runB_orth1,1.0,primary ladder,0.4161280254511221,random_forest,0.8150056260899422
-runB,5.0,primary ladder,0.4298641888854708,logistic_regression,0.7422219370960033
-runB,5.0,primary ladder,0.4298641888854708,linear_svm,0.7424566509383487
-runB,5.0,primary ladder,0.4298641888854708,random_forest,0.8228125794939627
+runA_grl,0.0,primary ladder,0.42763838884448824,logistic_regression,0.7463654565806873
+runA_grl,0.0,primary ladder,0.42763838884448824,linear_svm,0.7450353942977849
+runA_grl,0.0,primary ladder,0.42763838884448824,random_forest,0.8269742113640662
+runB_orth1,1.0,primary ladder,0.42366981662433567,logistic_regression,0.7320106396738018
+runB_orth1,1.0,primary ladder,0.42366981662433567,linear_svm,0.7320004713170754
+runB_orth1,1.0,primary ladder,0.42366981662433567,random_forest,0.8094895158573976
+runB,5.0,primary ladder,0.4298967602619246,logistic_regression,0.7209038054559761
+runB,5.0,primary ladder,0.4298967602619246,linear_svm,0.7216414579018867
+runB,5.0,primary ladder,0.4298967602619246,random_forest,0.8119440575487769
 baseline_soft,,categorical reference,0.7670396910582987,logistic_regression,0.9976652284968883
 baseline_soft,,categorical reference,0.7670396910582987,linear_svm,0.997199407830631
 baseline_soft,,categorical reference,0.7670396910582987,random_forest,0.97692281135139

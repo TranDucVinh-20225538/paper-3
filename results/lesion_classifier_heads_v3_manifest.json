@@ -1,0 +1,210 @@
+{
+  "n_runs": 13,
+  "weight_key": "model.lesion_classifier.weight",
+  "bias_key": "model.lesion_classifier.bias",
+  "npz_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/lesion_classifier_heads_v3.npz",
+  "npz_sha256": "ba3497cba63375ee4fc1323c21a746eeca3fc2c640ee7c4373d729abc67192f8",
+  "npz_nbytes": 12595,
+  "torch": "2.1.1",
+  "excluded": [
+    "runB_s72",
+    "runB_s82"
+  ],
+  "runs": [
+    {
+      "run_name": "runA_grl_s42",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s42/best-26.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s42/best-26.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runA_grl_s42/summary.json",
+      "checkpoint_sha256": "4f1bb8836ca7491406bb22a1d8ca8c1d06ebfb2e7c09a239a7748eddc13450ee",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 26
+    },
+    {
+      "run_name": "runA_grl_s52",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s52/best-38.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s52/best-38.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runA_grl_s52/summary.json",
+      "checkpoint_sha256": "adb213ec4420ae9d4abdbdc38ed931952226f7777c13f7c38e41ff096322473f",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 38
+    },
+    {
+      "run_name": "runA_grl_s62",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s62/best-39.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s62/best-39.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runA_grl_s62/summary.json",
+      "checkpoint_sha256": "0a998faeaa629e231ee1c404f76a02115a0ba818c2ab3e5dfc233adb24829bc5",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 39
+    },
+    {
+      "run_name": "runA_grl_s72",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s72/best-18.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s72/best-18.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runA_grl_s72/summary.json",
+      "checkpoint_sha256": "863688ef9cdd64bd1a6e24d8a9cd071a3f11f0c47f6a3eb2109289ad9e713ed5",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 18
+    },
+    {
+      "run_name": "runA_grl_s82",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s82/best-34.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runA_grl_s82/best-34.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runA_grl_s82/summary.json",
+      "checkpoint_sha256": "091859de8a819539656b07572951d4f670b3762da4f933529c13425b4906ea11",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 34
+    },
+    {
+      "run_name": "runB_orth1_s42",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s42/best-34.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s42/best-34.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_orth1_s42/summary.json",
+      "checkpoint_sha256": "bdd21b3bfbf76f1ae03ae840d2a8018b398cf0c9654a4279a78fe80424addd73",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 34
+    },
+    {
+      "run_name": "runB_orth1_s52",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s52/best-38.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s52/best-38.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_orth1_s52/summary.json",
+      "checkpoint_sha256": "9507cab12d3ad605c45464e87009168fde6f8e0bcd94bf69fa3c6a9abb37f7ec",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 38
+    },
+    {
+      "run_name": "runB_orth1_s62",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s62/best-39.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s62/best-39.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_orth1_s62/summary.json",
+      "checkpoint_sha256": "06389dfb9fde5b7116fdbe83d0189b0a682d911f70ff06d09281fb16ed4c0f28",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 39
+    },
+    {
+      "run_name": "runB_orth1_s72",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s72/best-28.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s72/best-28.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_orth1_s72/summary.json",
+      "checkpoint_sha256": "e556abac80d4d3713bbaf678b4311ba7c0b68d3b3c266a05a15feb7287bd6eca",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 28
+    },
+    {
+      "run_name": "runB_orth1_s82",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s82/best-38.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_orth1_s82/best-38.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_orth1_s82/summary.json",
+      "checkpoint_sha256": "bb227e07f7dae5052e35ef0a24a49c3025c6e1e6f9487b0d93b300faafd14df1",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 38
+    },
+    {
+      "run_name": "runB_s42",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s42/best-38.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s42/best-38.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_s42/summary.json",
+      "checkpoint_sha256": "2392c5a227269df867ce6e8086f4a21e5e476f14042ab257b261cec7dec79907",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 38
+    },
+    {
+      "run_name": "runB_s52",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s52/best-39.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s52/best-39.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_s52/summary.json",
+      "checkpoint_sha256": "f15d52e243bdecbb3ba589796eb080ced98bb927af53052b8050f1a060ce55fd",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 39
+    },
+    {
+      "run_name": "runB_s62",
+      "checkpoint_path": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s62/best-24.ckpt",
+      "best_checkpoint_from_summary": "/data2/hpcshared/Vinh-/CSG-Skin-train/checkpoints/csg_lite/runB_s62/best-24.ckpt",
+      "summary_path": "/data2/hpcshared/Vinh-/paper-3/results_v3/csg_lite/runB_s62/summary.json",
+      "checkpoint_sha256": "11802d16f9716e4e438a32e1d31522d25c0394e281b9cf23a08f039adbbc875d",
+      "W_shape": [
+        8,
+        16
+      ],
+      "b_shape": [
+        8
+      ],
+      "epoch": 24
+    }
+  ]
+}

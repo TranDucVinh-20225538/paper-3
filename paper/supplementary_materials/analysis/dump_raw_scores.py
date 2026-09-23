@@ -15,12 +15,14 @@ dumping scores for a different quantity than the paper reports.
 
 Six of the eight scorers need only the cached embeddings. Energy and ViM need
 the checkpoint's classifier head to rebuild logits; pass --heads to supply it.
-The head MUST come from the same checkpoint the cache was built from, which for
-runB_s42 and runB_s62 is NOT the one summary.json names (see
-docs/checkpoint_selection_audit.md).
+The head MUST come from the same checkpoint the embeddings were built from. All
+fifteen were re-extracted together in September 2026, so the heads are
+lesion_classifier_heads_v3.npz for the thirteen retrained runs and
+lesion_classifier_heads_new.npz for runB seeds 72 and 82, which were not.
 
     python3 analysis/dump_raw_scores.py
-    python3 analysis/dump_raw_scores.py --heads results/lesion_classifier_heads.npz
+    python3 analysis/dump_raw_scores.py \
+        --heads results/lesion_classifier_heads_v3.npz results/lesion_classifier_heads_new.npz
 """
 
 from __future__ import annotations

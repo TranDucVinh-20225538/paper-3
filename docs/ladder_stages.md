@@ -1,0 +1,81 @@
+# Ladder qua 2 mốc
+
+Sinh bởi `analysis/compare_stages.py`. Mốc cuối là bản hiện hành.
+
+
+## Số checkpoint
+
+| nấc | công bố n=13 | n=15 trộn env |
+|---|---|---|
+| `runA_grl` | 5 | 5 |
+| `runB_orth1` | 5 | 5 |
+| `runB` | 3 | 5 |
+
+## Geometry theo nấc (mean ± SD)
+
+| metric | nấc | công bố n=13 | n=15 trộn env |
+|---|---|---|---|
+| `condition_number` | `runA_grl` | 75.506 ± 7.795 | 75.499 ± 7.792 |
+| `condition_number` | `runB_orth1` | 559.8 ± 125.9 | 559.8 ± 126.1 |
+| `condition_number` | `runB` | 5,329.9 ± 2,672.2 | 8,066.2 ± 3,337.1 |
+| `fisher_ratio_HL` | `runA_grl` | 541,223.4 ± 80,980.7 | 541,274.5 ± 81,066.0 |
+| `fisher_ratio_HL` | `runB_orth1` | 570,718.0 ± 43,245.8 | 570,578.7 ± 43,098.7 |
+| `fisher_ratio_HL` | `runB` | 562,965.3 ± 49,922.9 | 584,857.1 ± 60,298.9 |
+| `fisher_ratio_scalar` | `runA_grl` | 4.694 ± 0.650 | 4.695 ± 0.651 |
+| `fisher_ratio_scalar` | `runB_orth1` | 4.936 ± 0.367 | 4.935 ± 0.366 |
+| `fisher_ratio_scalar` | `runB` | 4.951 ± 0.381 | 5.128 ± 0.415 |
+| `mardia_kurtosis_b` | `runA_grl` | 739.9 ± 86.5 | 739.8 ± 85.8 |
+| `mardia_kurtosis_b` | `runB_orth1` | 788.0 ± 240.9 | 787.5 ± 239.9 |
+| `mardia_kurtosis_b` | `runB` | 679.9 ± 63.7 | 765.6 ± 126.5 |
+| `mardia_kurtosis_z` | `runA_grl` | 341.1 ± 99.3 | 341.0 ± 98.5 |
+| `mardia_kurtosis_z` | `runB_orth1` | 397.3 ± 257.6 | 396.7 ± 256.5 |
+| `mardia_kurtosis_z` | `runB` | 270.7 ± 53.4 | 366.6 ± 141.8 |
+
+## Mahalanobis AUROC theo nấc
+
+| nấc | công bố n=13 | n=15 trộn env |
+|---|---|---|
+| `runA_grl` | 0.401 ± 0.028 | 0.401 ± 0.028 |
+| `runB_orth1` | 0.408 ± 0.022 | 0.408 ± 0.022 |
+| `runB` | 0.393 ± 0.025 | 0.415 ± 0.020 |
+
+## E1 — geometry vs λ_orth (τ, p)
+
+| | công bố n=13 | n=15 trộn env |
+|---|---|---|
+| `condition_number` | +0.840, 2.78e-05 | +0.845, 2.64e-06 |
+| `fisher_ratio_HL` | +0.168, 0.521 | +0.237, 0.298 |
+| `fisher_ratio_scalar` | +0.076, 0.798 | +0.237, 0.298 |
+| `mardia_kurtosis_b` | -0.137, 0.608 | +0.056, 0.836 |
+| `mardia_kurtosis_z` | -0.168, 0.521 | +0.011, 1 |
+
+## E2 — geometry vs AUROC (τ, p)
+
+| | công bố n=13 | n=15 trộn env |
+|---|---|---|
+| `condition_number` | -0.128, 0.59 | +0.143, 0.495 |
+| `fisher_ratio_HL` | -0.282, 0.204 | -0.276, 0.169 |
+| `fisher_ratio_scalar` | -0.154, 0.51 | -0.219, 0.282 |
+| `mardia_kurtosis_b` | -0.128, 0.59 | -0.086, 0.697 |
+| `mardia_kurtosis_z` | -0.128, 0.59 | -0.067, 0.77 |
+
+## E2.6 — scorer vs λ_orth (τ, p)
+
+| | công bố n=13 | n=15 trộn env |
+|---|---|---|
+| `mahalanobis` | -0.076, 0.798 | +0.192, 0.406 |
+| `cosine` | +0.321, 0.194 | +0.372, 0.0912 |
+| `knn_k1` | -0.046, 0.898 | +0.146, 0.534 |
+| `knn_k10` | +0.015, 1 | +0.214, 0.35 |
+| `knn_k50` | +0.076, 0.798 | +0.304, 0.173 |
+| `energy` | +0.443, 0.0645 | +0.214, 0.35 |
+| `vim` | +0.076, 0.798 | +0.146, 0.534 |
+| `density_kde` | +0.015, 1 | +0.169, 0.468 |
+
+## E2.7 — probe vs λ_orth (τ, p)
+
+| | công bố n=13 | n=15 trộn env |
+|---|---|---|
+| `logistic_regression` | +0.260, 0.302 | +0.259, 0.251 |
+| `linear_svm` | +0.260, 0.302 | +0.304, 0.173 |
+| `random_forest` | -0.107, 0.701 | +0.192, 0.406 |
